@@ -12,6 +12,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<script src="photos.js"></script>
 <style>
   :root { --bg:#0F1214; --card:#1A1F23; --line:#2C3338; --text:#F2F4F5; --muted:#A3ADB5; --soft:#C9D1D7; --acc:#C6F432; --err:#FF8A80; }
   * { box-sizing: border-box; }
@@ -46,7 +47,12 @@
   .list { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .thumb { width: 46px; height: 46px; flex: 0 0 46px; border-radius: 12px; background: var(--bg); color: var(--acc); display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .thumb img, .art img { width: 100%; height: 100%; object-fit: cover; }
-  .art { background: var(--card); border: 1px solid var(--line); border-radius: 16px; color: var(--acc); display: flex; align-items: center; justify-content: center; height: 170px; overflow: hidden; }
+  .thumb .fallback, .art .fallback { display: none; }
+  .noimg img, .noimg .credit { display: none; }
+  .noimg .fallback { display: flex; }
+  .art { position: relative; }
+  .credit { position: absolute; right: 8px; bottom: 6px; font-size: 11px; color: #F2F4F5; background: rgba(15,18,20,.7); padding: 2px 6px; border-radius: 6px; }
+  .art { background: var(--card); border: 1px solid var(--line); border-radius: 16px; color: var(--acc); display: flex; align-items: center; justify-content: center; height: 200px; overflow: hidden; }
   .item .grow { flex: 1; min-width: 0; }
   .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 8px; }
   .bar > div { height: 100%; background: var(--acc); border-radius: 4px; }
@@ -149,6 +155,7 @@
     <button class="item" id="b-to-goals"><span class="grow">Goals<small>Add, edit or finish your goals</small></span><span class="muted">›</span></button>
   </div>
   <button class="danger" id="b-logout">Log out</button>
+  <p class="muted" style="text-align:center">RepLog version 2026-11-07c</p>
 </section>
 
 <!-- PROFILE -->
@@ -696,20 +703,20 @@ function planText(c) {
 // RepLog sketch icons: 64x64, stroke-only, drawn for RepLog (original line art)
 var ICONS = {
  legpress: '<path d="M6 54h52M12 54V38h18M12 38l8-16M20 54V38"/><circle cx="22" cy="17" r="4"/><path d="M30 38l8-10 6 6M46 18v26M42 18h8M42 44h8M50 22h6M50 40h6"/>',
- hacksquat: '<path d="M10 56h44M18 56L34 8M26 56L42 8M30 20h14M40 18v6"/><circle cx="36" cy="14" r="3"/><path d="M36 17l-4 12 6 8-2 10M32 29l-6 6"/>',
+ hacksquat: '<path d="M8 56h48M14 56L38 8M24 56L48 8"/><circle cx="41" cy="12" r="4"/><path d="M34 18l-6 12 6 10-6 12h6M28 30l-6-4M32 16h10"/>',
  rack: '<path d="M14 58V8M50 58V8M10 58h44M14 12h36M8 26h48"/><path d="M4 22v8M60 22v8M8 22v8M56 22v8"/><path d="M14 40h6M44 40h6"/>',
- legext: '<path d="M10 56h44M20 56V24M20 24h16M20 38h18l10 10M48 48l4-2"/><circle cx="50" cy="46" r="3"/><path d="M26 56V44M12 30h8"/>',
- legcurl: '<path d="M8 56h48M12 40h36M14 40v16M44 40v16M48 40l6-14M54 26l-6-2"/><circle cx="20" cy="34" r="4"/><path d="M24 36h18"/>',
- hip: '<path d="M10 56h44M22 56V18h20v38M22 34h20M18 40c-4 0-6 4-6 8M46 40c4 0 6 4 6 8"/><circle cx="32" cy="12" r="4"/>',
- calf: '<path d="M10 56h44M16 56V12M48 56V12M16 16h32M24 16v10M40 16v10M20 50h24M28 50l2-6h4l2 6"/>',
- chestpress: '<path d="M10 56h44M18 56V20h8v36M18 34h8M26 28h22M26 40h22M48 24v20"/><circle cx="22" cy="14" r="4"/>',
- pecfly: '<path d="M10 56h44M28 56V24h8v32M28 38h8M14 18c6 0 10 6 14 10M50 18c-6 0-10 6-14 10M12 14v8M52 14v8"/>',
- shoulderpress: '<path d="M10 56h44M26 56V30h12v26M26 42h12M18 10v20M46 10v20M14 10h8M42 10h8M18 20h8M46 20h-8"/>',
+ legext: '<path d="M8 56h48M20 56V42M12 42h24M14 42V20"/><circle cx="22" cy="13" r="4"/><path d="M22 18l2 20h14l13-6M24 26l6 14"/><circle cx="53" cy="34" r="3.5"/>',
+ legcurl: '<path d="M6 56h52M10 42h36M14 42v14M42 42v14M16 34h24l8-12"/><circle cx="11" cy="32" r="4"/><circle cx="49" cy="20" r="3.5"/>',
+ hip: '<path d="M8 56h48M24 40h16M32 40v16"/><circle cx="32" cy="11" r="4"/><path d="M32 16v20M32 34l-14 8-4 12M32 34l14 8 4 12M32 22l-8 10M32 22l8 10M10 40v10M54 40v10"/>',
+ calf: '<path d="M8 56h48M14 56V10M50 56V10M14 10h36M22 18h20M22 52h20"/><circle cx="32" cy="13" r="3.5"/><path d="M32 18v18l-4 14M32 36l4 14M24 50h-2M40 50h2"/>',
+ chestpress: '<path d="M8 56h48M20 56V44M12 44h18M14 44V14"/><circle cx="22" cy="12" r="4"/><path d="M22 17v25M22 26l14 2h12M48 20v16M48 28h6v28M22 42h10v12"/>',
+ pecfly: '<path d="M8 56h48M24 44h16M32 44v12"/><circle cx="32" cy="11" r="4"/><path d="M32 16v26M32 24h-14l-6-8M32 24h14l6-8M10 8v16M54 8v16"/>',
+ shoulderpress: '<path d="M8 56h48M24 46h16M32 46v10"/><circle cx="32" cy="20" r="4"/><path d="M32 25v19M32 28h-12V12M32 28h12V12M16 10h8M40 10h8M14 6v50M50 6v50"/>',
  latpull: '<path d="M10 56h44M44 56V6M44 8H20M20 8v10M10 18h20M26 56V42h14M24 42h20"/><circle cx="20" cy="30" r="4"/><path d="M14 18l4 8M26 18l-4 8"/>',
- row: '<path d="M6 56h52M10 46h24M14 46v10M50 56V14M50 30H30M28 26v8"/><circle cx="18" cy="32" r="4"/><path d="M22 36l6-4"/>',
+ row: '<path d="M6 56h52M8 48h22M12 48v8M52 56V10M44 38v12"/><circle cx="18" cy="22" r="4"/><path d="M18 27l2 19h22M19 32l10 2h4M33 34l19-16"/>',
  cable: '<path d="M8 58h48M12 58V6M52 58V6M12 6h40M12 12l14 26M52 12L38 38M22 38h8M34 38h8"/><circle cx="32" cy="20" r="4"/>',
- curl: '<path d="M10 56h44M20 56V30M20 30h18l8-8M46 22l4 4M30 30v-6l10-6M40 18l4 4"/><path d="M14 42h22"/>',
- abs: '<path d="M10 56h44M18 56V24M18 24h10M18 40h20v16M28 24l12 12M40 36v4"/><circle cx="34" cy="18" r="4"/>',
+ curl: '<path d="M8 56h48M18 56V44M10 44h16M24 30l14 10"/><circle cx="16" cy="13" r="4"/><path d="M16 18v24M17 26l14 10 4-14"/><circle cx="35" cy="20" r="2.5"/><path d="M46 56V14M46 20h-9"/>',
+ abs: '<path d="M8 56h48M18 56V42M12 42h16M14 42V20"/><circle cx="32" cy="18" r="4"/><path d="M20 42c0-10 4-16 10-20M26 30l10-2M20 42h14v12"/>',
  backext: '<path d="M8 56h48M14 56L40 30M30 56L46 36M40 30l6 6M44 28c4-4 10-4 12 0"/><circle cx="52" cy="22" r="3"/>',
  bench: '<path d="M8 40h40M14 40v14M42 40v14M48 40l6-14M10 18h44M14 12v12M50 12v12M8 14v8M56 14v8"/>',
  dumbbell: '<path d="M14 32h36M10 22v20M16 18v28M48 18v28M54 22v20"/>',
@@ -759,14 +766,30 @@ function iconKey(m) {
   return 'machine';
 }
 function iconSvg(key, size) {
-  return '<svg viewBox="0 0 64 64" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[key] || ICONS.machine) + '</svg>';
+  var sw = size <= 48 ? 3.6 : 2.8;
+  return '<svg viewBox="0 0 64 64" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[key] || ICONS.machine) + '</svg>';
 }
 
 // A photo URL in the Machines tab (column header "image_url") replaces the sketch
 function machineArt(m, size) {
-  var u = String(m.image_url || '').trim();
-  if (/^https:\/\//.test(u)) return '<img src="' + esc(u) + '" alt="" loading="lazy">';
-  return iconSvg(iconKey(m), size);
+  // 1) image_url column in the Machines tab, 2) free stock photo (photos.js), 3) drawing.
+  // If a photo can't load, the drawing shows instead.
+  var u = String(m.image_url || '').trim(), credit = '';
+  if (!/^https:\/\//.test(u) && typeof STOCK_PHOTOS !== 'undefined' && STOCK_PHOTOS[m.machine_id]) {
+    var ref = STOCK_PHOTOS[m.machine_id], small = size <= 48;
+    if (ref.indexOf('pexels:') === 0) {
+      var pid = ref.slice(7);
+      u = 'https://images.pexels.com/photos/' + pid + '/pexels-photo-' + pid + '.jpeg?auto=compress&cs=tinysrgb&fit=crop&' + (small ? 'w=120&h=120' : 'w=640&h=420');
+      credit = 'Photo: Pexels';
+    } else {
+      u = 'https://images.unsplash.com/' + ref + '?' + (small ? 'w=120&h=120' : 'w=640&h=420') + '&fit=crop&auto=format&q=70';
+      credit = 'Photo: Unsplash';
+    }
+  }
+  var sketch = iconSvg(iconKey(m), size);
+  if (!/^https:\/\//.test(u)) return sketch;
+  return '<img src="' + esc(u) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add(\'noimg\')">' +
+         '<span class="fallback">' + sketch + '</span>' + (credit && size > 48 ? '<span class="credit">' + credit + '</span>' : '');
 }
 
 var REST_MET = 1.5; // Compendium 07041, standing (fidgeting); same value as the script
