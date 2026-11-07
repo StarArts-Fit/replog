@@ -44,6 +44,16 @@
   .icon { width: 44px; height: 44px; border-radius: 12px; background: var(--card); color: var(--text); border: 0; font-size: 22px; flex: 0 0 44px; }
   button:disabled { opacity: .5; }
   .list { display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .thumb { width: 46px; height: 46px; flex: 0 0 46px; border-radius: 12px; background: var(--bg); color: var(--acc); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .thumb img, .art img { width: 100%; height: 100%; object-fit: cover; }
+  .art { background: var(--card); border: 1px solid var(--line); border-radius: 16px; color: var(--acc); display: flex; align-items: center; justify-content: center; height: 170px; overflow: hidden; }
+  .item .grow { flex: 1; min-width: 0; }
+  .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 8px; }
+  .bar > div { height: 100%; background: var(--acc); border-radius: 4px; }
+  .goal { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .goal:last-child { border-bottom: 0; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .chip { height: 36px; width: auto; padding: 0 12px; font-size: 14px; font-weight: 500; border-radius: 10px; background: transparent; color: var(--soft); border: 1px solid var(--line); }
   .item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); text-align: left; height: auto; border-radius: 0; font-weight: 400; font-size: 15px; }
   .item:last-child { border-bottom: 0; }
   .item small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
@@ -123,8 +133,72 @@
       <button class="ghost" id="b-weight" style="width:120px">Save</button>
     </div>
   </div>
+  <div class="card">
+    <div class="row between"><h2>Goals</h2><button class="chip" id="b-goals-home" style="margin:0">Manage</button></div>
+    <div id="h-goals"></div>
+  </div>
   <div style="flex:1"></div>
   <button class="primary" id="b-start" style="height:60px;font-size:18px">Start workout</button>
+</section>
+
+<!-- SETTINGS -->
+<section id="s-settings">
+  <div class="row"><button class="icon" data-go="home" aria-label="Back">‹</button><h1>Settings</h1></div>
+  <div class="list">
+    <button class="item" id="b-to-profile"><span class="grow">Profile<small>Name, phone, height, birth year, activity</small></span><span class="muted">›</span></button>
+    <button class="item" id="b-to-goals"><span class="grow">Goals<small>Add, edit or finish your goals</small></span><span class="muted">›</span></button>
+  </div>
+  <button class="danger" id="b-logout">Log out</button>
+</section>
+
+<!-- PROFILE -->
+<section id="s-profile">
+  <div class="row"><button class="icon" id="b-profile-back" aria-label="Back">‹</button><h1>Profile</h1></div>
+  <p class="muted" id="pr-note">Used to estimate calories. Weight comes from your weigh-ins on the home screen.</p>
+  <label>Full name<input id="pr-name" type="text" autocomplete="name"></label>
+  <label>Phone (optional)<input id="pr-phone" type="tel" autocomplete="tel"></label>
+  <div class="grid2">
+    <label>Sex (for calorie formulas)<select id="pr-sex"><option value="">–</option><option>Male</option><option>Female</option></select></label>
+    <label>Birth year<input id="pr-birth" type="number" inputmode="numeric" placeholder="e.g. 1980"></label>
+  </div>
+  <div class="grid2">
+    <label>Height (ft)<input id="pr-ft" type="number" inputmode="numeric" placeholder="5"></label>
+    <label>Height (in)<input id="pr-in" type="number" inputmode="numeric" placeholder="10"></label>
+  </div>
+  <div class="grid2">
+    <label>Activity level<select id="pr-activity"><option value="">–</option><option>Sedentary</option><option>Light</option><option>Moderate</option><option>Active</option><option>Very active</option></select></label>
+    <label>Experience<select id="pr-exp"><option value="">–</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
+  </div>
+  <label>Resting heart rate (optional, bpm)<input id="pr-hr" type="number" inputmode="numeric"></label>
+  <label>Injuries or limits (optional)<input id="pr-inj" type="text"></label>
+  <button class="primary" id="b-profile-save">Save profile</button>
+</section>
+
+<!-- GOALS -->
+<section id="s-goals">
+  <div class="row"><button class="icon" id="b-goals-back" aria-label="Back">‹</button><h1>Goals</h1></div>
+  <div class="card" id="g-list"></div>
+  <button class="primary" id="b-goal-add">+ Add a goal</button>
+</section>
+
+<!-- GOAL FORM -->
+<section id="s-goal">
+  <div class="row"><button class="icon" id="b-goal-back" aria-label="Back">‹</button><h1 id="gf-title">New goal</h1></div>
+  <label>Goal type<select id="gf-type">
+    <option>Target body weight</option><option>Workouts per week</option><option>Active kcal per week</option>
+    <option>Active minutes per week</option><option>Strength (load x reps)</option><option>Body fat %</option><option>Waist</option><option>Streak (weeks)</option>
+  </select></label>
+  <div id="gf-strength" style="display:none;flex-direction:column;gap:16px">
+    <label>Machine<select id="gf-machine"></select></label>
+    <label>Reps<input id="gf-reps" type="number" inputmode="numeric" value="8"></label>
+  </div>
+  <div class="grid2">
+    <label><span id="gf-target-label">Target</span><input id="gf-target" class="big" type="number" inputmode="decimal"></label>
+    <label id="gf-start-wrap">Starting value<input id="gf-start" class="big" type="number" inputmode="decimal"></label>
+  </div>
+  <label id="gf-date-wrap">Reach it by (optional)<input id="gf-date" type="date"></label>
+  <p class="muted" id="gf-hint"></p>
+  <button class="primary" id="b-goal-save">Save goal</button>
 </section>
 
 <!-- PICK MACHINE -->
@@ -153,6 +227,7 @@
   </div>
   <div style="flex:1"></div>
   <button class="primary" id="b-go" style="height:60px;font-size:18px">▶ Start activity</button>
+  <div class="art" id="pl-art"></div>
 </section>
 
 <!-- ACTIVE -->
@@ -175,6 +250,7 @@
     <button class="light" id="b-end">■ End activity</button>
   </div>
   <p class="muted" id="a-hint" style="text-align:center"></p>
+  <div class="art" id="a-art"></div>
   <div class="grid2">
     <button class="link" id="b-discard-active">Discard this activity</button>
     <button class="link" id="b-cancel-active" style="color:var(--err)">Cancel workout</button>
@@ -306,12 +382,13 @@ function boot() {
   busy(true, 'Loading…');
   call('init', { user_id: S.user_id }).then(function (o) {
     busy(false);
-    DATA.machines = o.machines; DATA.lookup = o.lookup; DATA.kg = o.latestWeightKg; DATA.lb = o.latestWeightLb; DATA.week = o.week;
+    DATA.machines = o.machines; DATA.lookup = o.lookup; DATA.kg = o.latestWeightKg; DATA.lb = o.latestWeightLb; DATA.week = o.week; DATA.user = o.user; DATA.goals = o.goals || [];
     if (o.user) S.name = o.user.full_name;
     save(); renderHome();
     if (S.current && S.current.start && !S.current.end) { renderActive(); show('active'); }
     else if (S.current && S.current.end) { renderLog(); show('log'); }
     else if (S.workout) { renderPick(); show('pick'); }
+    else if (DATA.user && !DATA.user.birth_year && !DATA.user.height_in && !S.profileAsked) { S.profileAsked = true; save(); openProfile(true); }
     else show('home');
   }).catch(function (e) { busy(false); toast(e.message, true); if (!S.token) show('setup'); });
 }
@@ -359,7 +436,8 @@ $('signup-form').onsubmit = function (e) {
     loggedIn(o, o.claimed ? 'Login added to your existing record (' + o.user_id + ')' : 'Account created (' + o.user_id + ')');
   }).catch(function (e) { busy(false); toast(e.message, true); });
 };
-$('b-settings').onclick = function () {
+$('b-settings').onclick = function () { show('settings'); };
+$('b-logout').onclick = function () {
   if (S.workout) { toast('Finish or cancel the current workout first.', true); return; }
   ask('Log out?', 'You will need your email and password to log in again on this phone.', 'Log out', function () {
     var t = S.token;
@@ -368,8 +446,155 @@ $('b-settings').onclick = function () {
   });
 };
 
+/* ---------- goals & profile ---------- */
+function refreshGoals() { call('getGoals', {}).then(function (o) { DATA.goals = o.goals; renderGoalsHome(); }).catch(function () {}); }
+var UNITS = { 'Target body weight': 'lb', 'Workouts per week': 'workouts', 'Active kcal per week': 'kcal',
+  'Active minutes per week': 'min', 'Strength (load x reps)': 'lb', 'Body fat %': '%', 'Waist': 'in', 'Streak (weeks)': 'weeks' };
+function goalTitle(g) {
+  if (g.goal_type === 'Strength (load x reps)') {
+    var mname = String(g.notes || '').replace(/^M\d+\s*·?\s*/, '');
+    return (mname || 'Strength') + ': ' + g.target_value + ' ' + (g.unit || 'lb');
+  }
+  if (g.goal_type === 'Target body weight') return 'Weight: ' + g.target_value + ' lb';
+  return g.goal_type + ': ' + g.target_value + ' ' + (UNITS[g.goal_type] || g.unit || '');
+}
+// returns { text, frac (0-1 or null) }
+function goalProgress(g) {
+  var cur = g.current, t = Number(g.target_value), st = g.start_value === '' ? null : Number(g.start_value);
+  var by = g.by_date ? new Date(g.by_date) : null, weeks = by ? (by - new Date()) / 604800000 : null;
+  if (g.status === 'Achieved') return { text: 'Achieved', frac: 1 };
+  switch (g.goal_type) {
+    case 'Target body weight':
+      if (cur == null) return { text: 'Add a weigh-in to track this', frac: null };
+      var left = Math.round((cur - t) * 10) / 10;
+      if ((st != null && st >= t && cur <= t) || (st != null && st < t && cur >= t)) return { text: 'Reached (now ' + cur + ' lb)', frac: 1 };
+      var txt = 'Now ' + cur + ' lb · ' + Math.abs(left) + ' lb to go';
+      if (weeks && weeks > 0) txt += ' · ' + Math.round(Math.abs(left) / weeks * 10) / 10 + ' lb/week';
+      return { text: txt, frac: st != null && st !== t ? Math.max(0, Math.min(1, (st - cur) / (st - t))) : null };
+    case 'Workouts per week': case 'Active kcal per week': case 'Active minutes per week':
+      return { text: (cur || 0).toLocaleString() + ' of ' + t.toLocaleString() + ' this week', frac: t ? Math.min(1, (cur || 0) / t) : null };
+    case 'Strength (load x reps)':
+      return cur ? { text: 'Best so far: ' + cur + ' lb', frac: Math.min(1, cur / t) } : { text: 'Log this machine to track progress', frac: null };
+    default:
+      return { text: by ? 'By ' + by.toLocaleDateString() : 'Update it in Goals when you measure', frac: null };
+  }
+}
+function goalHtml(g, withActions) {
+  var pr = goalProgress(g);
+  var h = '<div class="goal"><div class="row between"><b style="font-size:15px">' + esc(goalTitle(g)) + '</b>' +
+    (g.status !== 'Active' ? '<span class="muted">' + esc(g.status) + '</span>' : '') + '</div>' +
+    '<div class="muted" style="margin-top:4px">' + esc(pr.text) + '</div>' +
+    (pr.frac != null ? '<div class="bar"><div style="width:' + Math.round(pr.frac * 100) + '%"></div></div>' : '');
+  if (withActions) h += '<div class="chips"><button class="chip" data-gedit="' + esc(g.goal_id) + '">Edit</button>' +
+    (g.status === 'Active' ? '<button class="chip" data-gstat="Achieved" data-gid="' + esc(g.goal_id) + '">Mark achieved</button>' :
+                             '<button class="chip" data-gstat="Active" data-gid="' + esc(g.goal_id) + '">Make active</button>') +
+    '<button class="chip" data-gstat="Dropped" data-gid="' + esc(g.goal_id) + '" style="color:var(--err)">Remove</button></div>';
+  return h + '</div>';
+}
+function renderGoalsHome() {
+  var gs = (DATA.goals || []).filter(function (g) { return g.status === 'Active'; });
+  $('h-goals').innerHTML = gs.length ? gs.slice(0, 4).map(function (g) { return goalHtml(g, false); }).join('') +
+    (gs.length > 4 ? '<p class="muted">+' + (gs.length - 4) + ' more</p>' : '') :
+    '<p class="muted" style="margin-top:8px">No goals yet. Tap Manage to add one.</p>';
+}
+function renderGoals() {
+  var gs = DATA.goals || [];
+  $('g-list').innerHTML = gs.length ? gs.map(function (g) { return goalHtml(g, true); }).join('') : '<p class="muted">No goals yet.</p>';
+}
+var goalsFrom = 'home', profileFirstRun = false, editingGoal = null;
+function openGoals(from) { goalsFrom = from || 'settings'; renderGoals(); show('goals'); }
+$('b-goals-home').onclick = function () { openGoals('home'); };
+$('b-to-goals').onclick = function () { openGoals('settings'); };
+$('b-goals-back').onclick = function () { renderHome(); show(goalsFrom); };
+$('g-list').onclick = function (e) {
+  var ed = e.target.closest('[data-gedit]'), st = e.target.closest('[data-gstat]');
+  if (ed) { openGoalForm((DATA.goals || []).find(function (g) { return g.goal_id === ed.getAttribute('data-gedit'); })); return; }
+  if (!st) return;
+  var id = st.getAttribute('data-gid'), status = st.getAttribute('data-gstat');
+  var go = function () {
+    busy(true);
+    call('setGoalStatus', { goal_id: id, status: status }).then(function (o) { busy(false); DATA.goals = o.goals; renderGoals(); renderGoalsHome(); toast(status === 'Dropped' ? 'Goal removed' : 'Goal updated'); })
+      .catch(function (e2) { busy(false); toast(e2.message, true); });
+  };
+  if (status === 'Dropped') ask('Remove this goal?', 'It disappears from the app. It stays in your Sheet marked Dropped.', 'Remove goal', go); else go();
+};
+function fillMachineSelect() {
+  $('gf-machine').innerHTML = DATA.machines.filter(isStrength).map(function (m) {
+    return '<option value="' + esc(m.machine_id) + '">' + esc(m.name) + '</option>'; }).join('');
+}
+function syncGoalForm() {
+  var t = $('gf-type').value, strength = t === 'Strength (load x reps)', weekly = /per week/.test(t);
+  $('gf-strength').style.display = strength ? 'flex' : 'none';
+  $('gf-target-label').textContent = 'Target (' + UNITS[t] + ')';
+  $('gf-start-wrap').style.display = weekly ? 'none' : 'flex';
+  $('gf-date-wrap').style.display = weekly ? 'none' : 'flex';
+  $('gf-hint').textContent = weekly ? 'Weekly goals reset every Monday.' : (t === 'Target body weight' ? 'Starting value = your weight today. Progress uses your weigh-ins.' : '');
+}
+function openGoalForm(g) {
+  editingGoal = g || null;
+  fillMachineSelect();
+  $('gf-title').textContent = g ? 'Edit goal' : 'New goal';
+  $('gf-type').value = g ? g.goal_type : 'Target body weight';
+  $('gf-target').value = g ? g.target_value : '';
+  $('gf-start').value = g ? (g.start_value === '' ? '' : g.start_value) : (DATA.lb || '');
+  $('gf-date').value = g && g.by_date ? new Date(g.by_date).toISOString().slice(0, 10) : '';
+  if (g && g.goal_type === 'Strength (load x reps)') {
+    var m = String(g.notes || '').match(/^(M\d+)/); if (m) $('gf-machine').value = m[1];
+    var r = String(g.unit || '').match(/x\s*(\d+)/); $('gf-reps').value = r ? r[1] : 8;
+  }
+  syncGoalForm(); show('goal');
+}
+$('gf-type').onchange = function () {
+  syncGoalForm();
+  if (!editingGoal) $('gf-start').value = this.value === 'Target body weight' ? (DATA.lb || '') : '';
+};
+$('b-goal-add').onclick = function () { openGoalForm(null); };
+$('b-goal-back').onclick = function () { renderGoals(); show('goals'); };
+$('b-goal-save').onclick = function () {
+  var t = $('gf-type').value, p = { goal_type: t, target_value: $('gf-target').value.trim(), unit: UNITS[t],
+    start_value: $('gf-start-wrap').style.display === 'none' ? '' : $('gf-start').value.trim(),
+    by_date: $('gf-date-wrap').style.display === 'none' ? '' : $('gf-date').value, notes: editingGoal ? editingGoal.notes : '' };
+  if (editingGoal) p.goal_id = editingGoal.goal_id;
+  if (t === 'Strength (load x reps)') {
+    var sel = $('gf-machine'); p.unit = 'lb x ' + ($('gf-reps').value || 8);
+    p.notes = sel.value + ' · ' + sel.selectedOptions[0].text;
+  }
+  if (p.target_value === '') { toast('Enter a target.', true); return; }
+  busy(true);
+  call('saveGoal', p).then(function (o) {
+    busy(false); DATA.goals = o.goals; renderGoals(); renderGoalsHome(); toast('Goal saved');
+    if (profileFirstRun) { profileFirstRun = false; renderHome(); show('home'); } else show('goals');
+  }).catch(function (e) { busy(false); toast(e.message, true); });
+};
+function openProfile(firstRun) {
+  profileFirstRun = !!firstRun;
+  var u = DATA.user || {};
+  $('pr-note').textContent = firstRun ? 'Welcome! A few facts make the calorie estimates more accurate. You can change them later in Settings.' : 'Used to estimate calories. Weight comes from your weigh-ins on the home screen.';
+  $('pr-name').value = u.full_name || ''; $('pr-phone').value = u.phone || '';
+  $('pr-sex').value = u.sex || ''; $('pr-birth').value = u.birth_year || '';
+  var h = Number(u.height_in) || 0; $('pr-ft').value = h ? Math.floor(h / 12) : ''; $('pr-in').value = h ? h % 12 : '';
+  $('pr-activity').value = u.activity_level || ''; $('pr-exp').value = u.experience || '';
+  $('pr-hr').value = u.resting_hr_bpm || ''; $('pr-inj').value = u.injuries_limits || '';
+  show('profile');
+}
+$('b-to-profile').onclick = function () { openProfile(false); };
+$('b-profile-back').onclick = function () { if (profileFirstRun) { profileFirstRun = false; renderHome(); show('home'); } else show('settings'); };
+$('b-profile-save').onclick = function () {
+  var ft = n($('pr-ft').value), inch = n($('pr-in').value);
+  var p = { full_name: $('pr-name').value.trim(), phone: $('pr-phone').value.trim(), sex: $('pr-sex').value,
+    birth_year: $('pr-birth').value.trim(), height_in: (ft || inch) ? (ft || 0) * 12 + (inch || 0) : '',
+    activity_level: $('pr-activity').value, experience: $('pr-exp').value, resting_hr_bpm: $('pr-hr').value.trim(), injuries_limits: $('pr-inj').value.trim() };
+  if (!p.full_name) { toast('Enter your name.', true); return; }
+  busy(true);
+  call('saveProfile', p).then(function (o) {
+    busy(false); DATA.user = o.user; S.name = o.user.full_name; save(); toast('Profile saved');
+    if (profileFirstRun) { goalsFrom = 'home'; openGoalForm(null); } else show('settings');
+  }).catch(function (e) { busy(false); toast(e.message, true); });
+};
+
 /* ---------- home ---------- */
 function renderHome() {
+  renderGoalsHome();
   $('h-hello').textContent = 'Hi ' + (S.name ? String(S.name).split(' ')[0] : '');
   var w = DATA.week || {};
   $('w-count').textContent = fmtNum(w.workouts);
@@ -383,7 +608,7 @@ $('b-weight').onclick = function () {
   var lb = n($('f-weight').value); if (!lb) { toast('Enter your weight in lb.', true); return; }
   busy(true);
   call('logWeight', { user_id: S.user_id, weight_lb: lb }).then(function (o) {
-    busy(false); DATA.kg = o.latestWeightKg; DATA.lb = o.latestWeightLb; $('f-weight').value = ''; renderHome(); toast(o.updated ? 'Today\'s weight updated' : 'Weight saved');
+    busy(false); DATA.kg = o.latestWeightKg; DATA.lb = o.latestWeightLb; $('f-weight').value = ''; renderHome(); refreshGoals(); toast(o.updated ? 'Today\'s weight updated' : 'Weight saved');
   }).catch(function (e) { busy(false); toast(e.message, true); });
 };
 $('b-start').onclick = function () {
@@ -412,7 +637,7 @@ function renderPick() {
     html += '<div class="cat">' + esc(c) + '</div><div class="list">';
     groups[c].forEach(function (i) {
       var m = DATA.machines[i];
-      html += '<button class="item" data-m="' + i + '"><span>' + esc(m.name) + '<small>' + esc(m.primary_muscles) + '</small></span><span class="muted">›</span></button>';
+      html += '<button class="item" data-m="' + i + '"><span class="thumb">' + machineArt(m, 36) + '</span><span class="grow">' + esc(m.name) + '<small>' + esc(m.primary_muscles) + '</small></span><span class="muted">›</span></button>';
     });
     html += '</div>';
   });
@@ -429,6 +654,7 @@ $('b-finish-pick').onclick = function () { finishWorkout(); };
 function openPlan(m, keepLoad) {
   S.current = { machine: m, start: null, end: null }; save();
   $('pl-name').textContent = m.name; $('pl-cat').textContent = m.category;
+  $('pl-art').innerHTML = machineArt(m, 140);
   var key = lookupKey(m), strength = isStrength(m);
   $('pl-strength').style.display = strength ? 'grid' : 'none';
   $('pl-cardio').style.display = (key && key !== 'Elliptical') ? 'block' : 'none';
@@ -467,6 +693,82 @@ function planText(c) {
   if (c.load || c.reps) return (c.load ? c.load + ' lb · ' : '') + 'plan ' + (c.sets || '–') + ' × ' + (c.reps || '–');
   return '';
 }
+// RepLog sketch icons: 64x64, stroke-only, drawn for RepLog (original line art)
+var ICONS = {
+ legpress: '<path d="M6 54h52M12 54V38h18M12 38l8-16M20 54V38"/><circle cx="22" cy="17" r="4"/><path d="M30 38l8-10 6 6M46 18v26M42 18h8M42 44h8M50 22h6M50 40h6"/>',
+ hacksquat: '<path d="M10 56h44M18 56L34 8M26 56L42 8M30 20h14M40 18v6"/><circle cx="36" cy="14" r="3"/><path d="M36 17l-4 12 6 8-2 10M32 29l-6 6"/>',
+ rack: '<path d="M14 58V8M50 58V8M10 58h44M14 12h36M8 26h48"/><path d="M4 22v8M60 22v8M8 22v8M56 22v8"/><path d="M14 40h6M44 40h6"/>',
+ legext: '<path d="M10 56h44M20 56V24M20 24h16M20 38h18l10 10M48 48l4-2"/><circle cx="50" cy="46" r="3"/><path d="M26 56V44M12 30h8"/>',
+ legcurl: '<path d="M8 56h48M12 40h36M14 40v16M44 40v16M48 40l6-14M54 26l-6-2"/><circle cx="20" cy="34" r="4"/><path d="M24 36h18"/>',
+ hip: '<path d="M10 56h44M22 56V18h20v38M22 34h20M18 40c-4 0-6 4-6 8M46 40c4 0 6 4 6 8"/><circle cx="32" cy="12" r="4"/>',
+ calf: '<path d="M10 56h44M16 56V12M48 56V12M16 16h32M24 16v10M40 16v10M20 50h24M28 50l2-6h4l2 6"/>',
+ chestpress: '<path d="M10 56h44M18 56V20h8v36M18 34h8M26 28h22M26 40h22M48 24v20"/><circle cx="22" cy="14" r="4"/>',
+ pecfly: '<path d="M10 56h44M28 56V24h8v32M28 38h8M14 18c6 0 10 6 14 10M50 18c-6 0-10 6-14 10M12 14v8M52 14v8"/>',
+ shoulderpress: '<path d="M10 56h44M26 56V30h12v26M26 42h12M18 10v20M46 10v20M14 10h8M42 10h8M18 20h8M46 20h-8"/>',
+ latpull: '<path d="M10 56h44M44 56V6M44 8H20M20 8v10M10 18h20M26 56V42h14M24 42h20"/><circle cx="20" cy="30" r="4"/><path d="M14 18l4 8M26 18l-4 8"/>',
+ row: '<path d="M6 56h52M10 46h24M14 46v10M50 56V14M50 30H30M28 26v8"/><circle cx="18" cy="32" r="4"/><path d="M22 36l6-4"/>',
+ cable: '<path d="M8 58h48M12 58V6M52 58V6M12 6h40M12 12l14 26M52 12L38 38M22 38h8M34 38h8"/><circle cx="32" cy="20" r="4"/>',
+ curl: '<path d="M10 56h44M20 56V30M20 30h18l8-8M46 22l4 4M30 30v-6l10-6M40 18l4 4"/><path d="M14 42h22"/>',
+ abs: '<path d="M10 56h44M18 56V24M18 24h10M18 40h20v16M28 24l12 12M40 36v4"/><circle cx="34" cy="18" r="4"/>',
+ backext: '<path d="M8 56h48M14 56L40 30M30 56L46 36M40 30l6 6M44 28c4-4 10-4 12 0"/><circle cx="52" cy="22" r="3"/>',
+ bench: '<path d="M8 40h40M14 40v14M42 40v14M48 40l6-14M10 18h44M14 12v12M50 12v12M8 14v8M56 14v8"/>',
+ dumbbell: '<path d="M14 32h36M10 22v20M16 18v28M48 18v28M54 22v20"/>',
+ kettlebell: '<path d="M22 24c0-10 20-10 20 0M18 32c0-6 6-8 14-8s14 2 14 8v10c0 8-6 12-14 12s-14-4-14-12z"/><path d="M26 54h12"/>',
+ barbell: '<path d="M6 32h52M12 20v24M18 16v32M46 16v32M52 20v24"/><path d="M24 32h16"/>',
+ treadmill: '<path d="M8 50h44l4-6H12zM46 44l6-30M52 14h-8"/><circle cx="18" cy="16" r="4"/><path d="M18 20l2 10-6 10M20 30l8 4M20 30l-2 14M16 24l8-2"/>',
+ bike: '<path d="M14 54h30M22 54V38M36 54V30M18 38h12M30 30h12M38 22h8"/><circle cx="36" cy="44" r="8"/><path d="M42 22l-6 8"/>',
+ elliptical: '<path d="M8 54h48M44 54V12M44 12l-6 4M24 50c-8 0-12-4-12-8s4-8 12-8 12 4 12 8M20 34l24-22M30 46l14-30"/>',
+ rower: '<path d="M6 52h52M8 52l4-6h40l4 6M48 46V30"/><circle cx="48" cy="26" r="6"/><circle cx="22" cy="34" r="4"/><path d="M24 38l12 4h10M26 46l8-6"/>',
+ stair: '<path d="M10 56h44M44 56V10M44 10h-8M14 56V46h10V36h10V26h10"/><circle cx="22" cy="20" r="3"/><path d="M22 23l2 9 6 4"/>',
+ skierg: '<path d="M20 58h24M32 58V8M28 8h8M30 14l-12 20M34 14l12 20M16 34h6M42 34h6"/><circle cx="32" cy="22" r="3"/>',
+ jumprope: '<path d="M16 22v12M48 22v12M16 34c0 22 32 22 32 0"/><circle cx="32" cy="12" r="4"/><path d="M32 16v16M22 22l10 4 10-4M32 32l-6 10M32 32l6 10"/>',
+ punchbag: '<path d="M32 4v8M26 12h12v6c0 0 2 4 2 10v18c0 6-4 10-8 10s-8-4-8-10V28c0-6 2-10 2-10z"/><path d="M26 22h12M26 44h12"/>',
+ sled: '<path d="M6 52h52M14 52l4-12h22l4 12M30 40V24h10M36 24v16M18 46h20"/><circle cx="48" cy="24" r="3"/><path d="M48 27l-6 10M44 32l-6-8"/>',
+ tire: '<circle cx="32" cy="36" r="18"/><circle cx="32" cy="36" r="8"/><path d="M14 36h4M46 36h4M32 18v4M32 50v4"/>',
+ ropes: '<path d="M6 40c6-10 10 10 16 0s10 10 16 0 10 10 16 0M6 50c6-10 10 10 16 0s10 10 16 0 10 10 16 0M54 40h4M54 50h4"/><circle cx="58" cy="30" r="3"/>',
+ box: '<path d="M14 30h36v24H14zM14 30l8-8h36l-8 8M58 22v24l-8 8"/><circle cx="34" cy="10" r="3"/><path d="M34 13v6M28 18l6-2 6 2"/>',
+ trx: '<path d="M32 4v6M32 10l-10 20M32 10l10 20M18 30h8M38 30h8"/><circle cx="32" cy="38" r="3"/><path d="M32 41l-6 16M24 57h20"/>',
+ mat: '<path d="M6 54h52M8 54l6-4h40l4 4"/><circle cx="24" cy="24" r="4"/><path d="M24 28v12l-8 10M24 40l10 10M24 32l14-8"/>',
+ ball: '<circle cx="32" cy="34" r="18"/><path d="M14 34h36M32 16c-8 8-8 28 0 36M32 16c8 8 8 28 0 36"/>',
+ run: '<circle cx="36" cy="12" r="5"/><path d="M34 18l-6 14 8 6-2 14M28 32l-10 4M34 24l10 6M30 38l-10 14M8 58h48"/>',
+ swim: '<circle cx="46" cy="22" r="4"/><path d="M14 32l14-6 12 8M40 34l8-6M6 44c6-4 10 4 16 0s10 4 16 0 10 4 16 0M6 54c6-4 10 4 16 0s10 4 16 0 10 4 16 0"/>',
+ cycle: '<circle cx="16" cy="44" r="10"/><circle cx="48" cy="44" r="10"/><path d="M16 44l10-16h16l6 16M26 28l8 16h-18M34 20h8M42 28l-2-8"/>',
+ class: '<circle cx="20" cy="14" r="4"/><circle cx="44" cy="14" r="4"/><path d="M20 18v14l-6 14M20 32l6 14M20 22l-8 4M20 22l8-6M44 18v14l-6 14M44 32l6 14M44 22l8-6M44 22l-8 4M6 56h52"/>',
+ machine: '<path d="M10 56h44M16 56V10h32v46M16 22h32M24 30h16v16H24z"/>'
+};
+// Which sketch a machine gets: first matching rule on name + aliases
+var ICON_RULES = [
+ [/hack squat|pendulum|belt squat/, 'hacksquat'], [/leg press/, 'legpress'], [/smith|squat rack|power rack|barbell rack/, 'rack'],
+ [/leg extension/, 'legext'], [/leg curl|glute-ham|ghd/, 'legcurl'], [/abductor|adductor|multi-hip|kickback|hip thrust/, 'hip'],
+ [/calf/, 'calf'], [/pec deck|fly/, 'pecfly'], [/chest press|dip machine|seated dip/, 'chestpress'], [/shoulder press|lateral raise|shrug/, 'shoulderpress'],
+ [/pulldown|pull-up|pullover|assisted/, 'latpull'], [/row machine|cable row|t-bar|plate-loaded row|seated row/, 'row'],
+ [/cable cross|functional trainer|cable station/, 'cable'], [/biceps|triceps|preacher|curl machine/, 'curl'],
+ [/ab crunch|rotary torso|ab wheel/, 'abs'], [/back extension|roman|reverse hyper/, 'backext'],
+ [/bench/, 'bench'], [/dumbbell/, 'dumbbell'], [/kettlebell/, 'kettlebell'], [/trap|hex bar|ez curl|landmine|barbell/, 'barbell'],
+ [/curved|treadmill/, 'treadmill'], [/air bike|stationary bike|recumbent|spin bike/, 'bike'], [/elliptical/, 'elliptical'],
+ [/rowing/, 'rower'], [/stair climber|climbing machine|stair climbing|stairs/, 'stair'], [/ski erg/, 'skierg'],
+ [/jump rope/, 'jumprope'], [/punching|boxing/, 'punchbag'], [/sled/, 'sled'], [/tire/, 'tire'], [/battle rope/, 'ropes'],
+ [/plyo|step aerobics/, 'box'], [/suspension|trx/, 'trx'], [/medicine|slam|sandbag|farmer/, 'ball'],
+ [/swim|water aerobics/, 'swim'], [/cycling \(outdoor\)/, 'cycle'], [/walk|running|run|hiking|hike/, 'run'],
+ [/hiit|tabata|dance|class|trampoline|slide board/, 'class'],
+ [/yoga|stretch|pilates|tai chi|foam|mat|resistance band/, 'mat']
+];
+function iconKey(m) {
+  var t = (String(m.name || '') + ' ' + String(m.aliases || '')).toLowerCase();
+  for (var i = 0; i < ICON_RULES.length; i++) if (ICON_RULES[i][0].test(t)) return ICON_RULES[i][1];
+  return 'machine';
+}
+function iconSvg(key, size) {
+  return '<svg viewBox="0 0 64 64" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[key] || ICONS.machine) + '</svg>';
+}
+
+// A photo URL in the Machines tab (column header "image_url") replaces the sketch
+function machineArt(m, size) {
+  var u = String(m.image_url || '').trim();
+  if (/^https:\/\//.test(u)) return '<img src="' + esc(u) + '" alt="" loading="lazy">';
+  return iconSvg(iconKey(m), size);
+}
+
 var REST_MET = 1.5; // Compendium 07041, standing (fidgeting); same value as the script
 
 function clock(sec) { sec = Math.max(0, Math.floor(sec)); return (sec >= 3600 ? Math.floor(sec / 3600) + ':' + String(Math.floor(sec / 60) % 60).padStart(2, '0') : Math.floor(sec / 60)) + ':' + String(sec % 60).padStart(2, '0'); }
@@ -485,6 +787,7 @@ function renderActive() {
   var c = S.current;
   if (!c.segStart) { c.phase = 'work'; c.segStart = new Date(c.start).getTime(); c.work = c.work || 0; c.rest = c.rest || 0; c.pause = c.pause || 0; c.setsDone = c.setsDone || 0; save(); }
   $('a-name').textContent = c.machine.name; $('a-plan').textContent = planText(c);
+  $('a-art').innerHTML = machineArt(c.machine, 140);
   $('a-start').textContent = fmtTime(c.start);
   $('a-split').style.display = c.split ? 'grid' : 'none';
   $('b-set').style.display = c.split ? 'block' : 'none';
@@ -597,7 +900,7 @@ function finishWorkout() {
       return '<div class="item"><span>' + esc(s.machine) + '<small>' + esc([d, mins].filter(Boolean).join(' · ')) + '</small></span><b>' + (typeof s.kcal === 'number' ? s.kcal : '–') + ' kcal</b></div>';
     }).join('') || '<div class="item"><span class="muted">No activities logged</span></div>';
     S.workout = null; S.current = null; save();
-    call('week', { user_id: S.user_id }).then(function (r) { DATA.week = r.week; renderHome(); }).catch(function () {});
+    call('week', { user_id: S.user_id }).then(function (r) { DATA.week = r.week; renderHome(); refreshGoals(); }).catch(function () {});
     var tgt = DATA.week && DATA.week.kcalTarget;
     $('u-pct').textContent = tgt && w.total_kcal ? Math.round(100 * w.total_kcal / tgt) + '% of your ' + tgt.toLocaleString() + ' kcal weekly target' : '';
     show('summary');
@@ -629,7 +932,7 @@ function cancelWorkout() {
     busy(true, 'Cancelling…');
     call('cancelWorkout', { workout_id: S.workout.id, user_id: S.user_id }).then(function () {
       busy(false); S.workout = null; S.current = null; save();
-      call('week', { user_id: S.user_id }).then(function (r) { DATA.week = r.week; renderHome(); }).catch(function () {});
+      call('week', { user_id: S.user_id }).then(function (r) { DATA.week = r.week; renderHome(); refreshGoals(); }).catch(function () {});
       renderHome(); show('home'); toast('Workout cancelled');
     }).catch(function (e) {
       busy(false);
