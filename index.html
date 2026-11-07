@@ -310,7 +310,7 @@ var INSTRUCTIONS = {
     <button class="item" id="b-to-goals"><span class="grow">Goals<small>Add, edit or finish your goals</small></span><span class="muted">›</span></button>
   </div>
   <button class="danger" id="b-logout">Log out</button>
-  <p class="muted" style="text-align:center">RepLog version 2026-11-07e</p>
+  <p class="muted" style="text-align:center">RepLog version 2026-11-07f</p>
 </section>
 
 <!-- PROFILE -->
@@ -510,7 +510,7 @@ function call(action, payload) {
     .then(function (o) {
       clearTimeout(timer);
       if (o.ok) return o;
-      if (o.code === 'auth') { S.token = ''; save(); busy(false); show('setup'); }
+      if (o.code === 'auth') { S.token = ''; save(); busy(false); if (S.lastEmail) $('f-user').value = S.lastEmail; show('setup'); toast('Your login ended. Please log in again.', true); }
       var err = new Error(o.error); err.code = o.code; throw err;
     });
 }
@@ -542,7 +542,7 @@ function isStrength(m) { return m.category !== 'Cardio' && m.category !== 'Flexi
 
 /* ---------- start-up ---------- */
 function boot() {
-  if (!S.token) { show('setup'); return; }
+  if (!S.token) { if (S.lastEmail) $('f-user').value = S.lastEmail; show('setup'); return; }
   busy(true, 'Loading…');
   call('init', { user_id: S.user_id }).then(function (o) {
     busy(false);
@@ -558,7 +558,9 @@ function boot() {
 }
 
 function loggedIn(o, msg) {
-  busy(false); S.token = o.token; S.user_id = o.user_id; save();
+  busy(false); S.token = o.token; S.user_id = o.user_id;
+  var em = ($('f-user').value || $('f-email').value || '').trim(); if (em) S.lastEmail = em;
+  save();
   $('f-pass').value = ''; $('f-npass').value = ''; $('f-invite').value = '';
   toast(msg); boot();
 }
