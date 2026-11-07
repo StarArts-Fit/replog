@@ -306,7 +306,7 @@ function boot() {
   busy(true, 'Loading…');
   call('init', { user_id: S.user_id }).then(function (o) {
     busy(false);
-    DATA.machines = o.machines; DATA.lookup = o.lookup; DATA.kg = o.latestWeightKg; DATA.week = o.week;
+    DATA.machines = o.machines; DATA.lookup = o.lookup; DATA.kg = o.latestWeightKg; DATA.lb = o.latestWeightLb; DATA.week = o.week;
     if (o.user) S.name = o.user.full_name;
     save(); renderHome();
     if (S.current && S.current.start && !S.current.end) { renderActive(); show('active'); }
@@ -376,14 +376,14 @@ function renderHome() {
   $('w-min').textContent = fmtNum(w.minutes);
   $('w-kcal').textContent = fmtNum(w.kcal);
   $('h-target').textContent = w.kcalTarget ? Math.round(100 * (w.kcal || 0) / w.kcalTarget) + '% of ' + w.kcalTarget.toLocaleString() + ' kcal' : '';
-  $('h-weight').textContent = DATA.kg ? Math.round(DATA.kg * 2.20462 * 10) / 10 + ' lb' : 'not set — add it';
+  $('h-weight').textContent = DATA.lb ? DATA.lb + ' lb' : (DATA.kg ? Math.round(DATA.kg * 2.20462 * 10) / 10 + ' lb' : 'not set — add it');
   $('b-start').textContent = S.workout ? 'Resume workout' : 'Start workout';
 }
 $('b-weight').onclick = function () {
   var lb = n($('f-weight').value); if (!lb) { toast('Enter your weight in lb.', true); return; }
   busy(true);
   call('logWeight', { user_id: S.user_id, weight_lb: lb }).then(function (o) {
-    busy(false); DATA.kg = o.latestWeightKg; $('f-weight').value = ''; renderHome(); toast('Weight saved');
+    busy(false); DATA.kg = o.latestWeightKg; DATA.lb = o.latestWeightLb; $('f-weight').value = ''; renderHome(); toast(o.updated ? 'Today\'s weight updated' : 'Weight saved');
   }).catch(function (e) { busy(false); toast(e.message, true); });
 };
 $('b-start').onclick = function () {
