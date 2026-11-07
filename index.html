@@ -12,7 +12,157 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<script src="photos.js"></script>
+<script>
+/* ===== PHOTOS: edit here ===== */
+// RepLog stock photos. Free to use: Unsplash License (https://unsplash.com/license) and
+// Pexels License (https://www.pexels.com/license/). Each photo was checked by eye on 2026-11-07.
+// 'photo-…' = Unsplash, 'pexels:123' = Pexels. To drop a photo, delete its line; that machine
+// then shows its drawing. Keys are machine_id from the Machines tab.
+var STOCK_PHOTOS = {
+  M001: 'photo-1744551612249-655d096b9f95', // Seated Leg Press - man on a leg press machine
+  M002: 'photo-1784819482929-2f80190c8a02', // 45° Leg Press - woman performing leg press
+  M005: 'photo-1790094180933-c40f27936296', // Leg Extension - leg extension machine
+  M020: 'photo-1745329532611-03818982ed31', // Lat Pulldown - man doing a lat pulldown
+  M030: 'photo-1574680178050-55c6a6a96e0a', // Squat Rack / Barbell - woman lifting barbell
+  M031: 'photo-1690731033723-ad718c6e585a', // Bench + Barbell - bench press
+  M032: 'photo-1576678927484-cc907957088c', // Dumbbells - row of dumbbells on a rack
+  M033: 'photo-1632077804406-188472f1a810', // Kettlebells - row of kettlebells
+  M035: 'photo-1646239646963-b0b9be56d6b5', // Exercise Mat - yoga mat with blocks
+  M036: 'photo-1648995361141-30676a75fd27', // Treadmill - man running on a treadmill
+  M037: 'photo-1707985287164-c84627ad6eba', // Upright Stationary Bike - stationary bike
+  M039: 'photo-1760031670160-4da44e9596d0', // Spin Bike - row of exercise bikes
+  M041: 'photo-1780398585038-d77d3817c3c6', // Rowing Machine - man on a rowing machine
+  M045: 'photo-1552196563-55cd4e45efb3',    // Yoga / Stretching - woman doing yoga
+  M047: 'photo-1758875569215-6f4743bcbe97', // Tire Flip - exercising with a large tire
+  M048: 'photo-1758875569612-94d5e0f1a35f', // Battle Ropes - battle ropes indoors
+  M070: 'photo-1530021356476-0a6375ffe73b', // Suspension Trainer - TRX straps
+  M071: 'photo-1776710669928-e49471c63af5', // Resistance Bands - resistance band exercise
+  M077: 'photo-1770026136375-9b9d038300e1', // Jump Rope - jumping rope in a gym
+  M078: 'photo-1716306886418-f84f6d4c2f3a', // Punching Bag - row of punching bags
+  M083: 'photo-1524594152303-9fd13543fe6e', // Dance Fitness Class - women dancing
+  M084: 'photo-1708134028754-5ba43093fedf', // Boxing Class - punching a bag
+  M085: 'photo-1747239069226-55382c570116', // Pilates - reformer
+  M088: 'photo-1597120590849-a1d5a743d155', // Walking (outdoor) - people walking on a path
+  M090: 'photo-1480179087180-d9f0ec044897', // Running (outdoor) - woman running
+  M091: 'photo-1501554728187-ce583db33af7', // Hiking - hikers on a mountain trail
+  M092: 'photo-1534787238916-9ba6764efd4f', // Cycling (outdoor) - road cyclist
+  M093: 'photo-1519315901367-f34ff9154487', // Swimming Laps - swimmer in a pool
+  M006: 'pexels:6539840',  // Seated Leg Curl - seated leg curl machine
+  M014: 'pexels:3838926',  // Chest Press - man on a chest press machine
+  M017: 'pexels:3838937',  // Pec Deck - man on a pec deck machine
+  M018: 'pexels:34669288', // Shoulder Press - man on a shoulder press machine
+  M021: 'pexels:4162482',  // Seated Cable Row - seated row machine
+  M024: 'pexels:5769127',  // Cable Crossover / Functional Trainer - cable exercise
+  M034: 'pexels:14591606', // Pull-up / Dip Station - woman doing pull-ups
+  M040: 'pexels:6285181',  // Elliptical - woman on an elliptical trainer
+  M042: 'pexels:31012859', // Stair Climber - StairMaster steps
+  M066: 'pexels:32610335', // Medicine Ball / Slam Ball - medicine balls on a rack
+  M069: 'pexels:7675405',  // Plyo Box - box jump
+  M074: 'pexels:20418621'  // Air Bike - fan bike
+};
+
+/* ===== HOW-TO INSTRUCTIONS: edit here ===== */
+// RepLog how-to instructions. General technique guidance, not personal medical advice.
+// Follow the placard on your gym's machine, start light, and stop if anything hurts.
+// Edit freely: s = setup, d = steps, t = tip. Keys are machine_id from the Machines tab.
+var INSTRUCTIONS = {
+  M001: { s: 'Sit with your back flat on the pad. Feet hip-width in the middle of the platform.', d: ['Release the safety handles.', 'Lower the platform until knees are near 90°.', 'Press through your heels until legs are almost straight.'], t: 'Never lock your knees at the top; keep your lower back on the pad.' },
+  M002: { s: 'Sit back on the angled seat, feet hip-width, mid-platform. Load plates evenly.', d: ['Push the sled up and turn the safety catches off.', 'Lower slowly until knees reach about 90°.', 'Drive back up through your heels.'], t: 'Lock the safety catches before you get off. Don\'t let your hips lift off the seat.' },
+  M003: { s: 'Shoulders under the pads, back flat on the backrest, feet shoulder-width on the platform.', d: ['Release the safety handles.', 'Squat down until thighs are about parallel.', 'Push up through your whole foot.'], t: 'Keep knees tracking over your toes; don\'t let them cave inward.' },
+  M004: { s: 'Set the bar at upper-chest height. Set the safety stops just below your lowest point.', d: ['Step under the bar, twist it off the hooks.', 'Squat (or press/row) along the fixed path.', 'Twist the bar back onto a hook to finish.'], t: 'The bar can only move up and down: place your feet so that path feels natural.' },
+  M005: { s: 'Back against the pad, knees lined up with the machine\'s pivot, roller on the front of the ankles.', d: ['Hold the side handles.', 'Straighten your legs in a smooth 2-second lift.', 'Lower under control without letting the stack touch.'], t: 'Use a moderate weight; avoid jerking the weight up.' },
+  M006: { s: 'Knees lined up with the pivot, thigh pad snug, roller just above your heels.', d: ['Hold the handles and keep your back on the pad.', 'Curl your heels down and back.', 'Return slowly to straight legs.'], t: 'Keep hips down on the seat; don\'t swing.' },
+  M007: { s: 'Lie face-down, knees just off the end of the bench, roller above your heels.', d: ['Grip the handles, hips pressed into the pad.', 'Curl your heels toward your glutes.', 'Lower slowly to nearly straight.'], t: 'If your hips lift, the weight is too heavy.' },
+  M008: { s: 'Sit tall, pads on the outside of your knees, start with legs together.', d: ['Push your knees apart against the pads.', 'Pause briefly at the widest point.', 'Return slowly without letting the stack touch.'], t: 'Keep your back against the seat; move only at the hips.' },
+  M009: { s: 'Sit tall, pads on the inside of your knees, start with legs apart (comfortable range).', d: ['Squeeze your knees together.', 'Pause briefly.', 'Let your legs open slowly.'], t: 'Pick a starting width that feels comfortable, not a deep stretch.' },
+  M010: { s: 'Shoulders under the pads, balls of the feet on the step edge, heels hanging off.', d: ['Rise up onto your toes as high as you can.', 'Pause at the top.', 'Lower your heels below the step for a stretch.'], t: 'Keep knees nearly straight and move slowly; no bouncing.' },
+  M011: { s: 'Sit with the pad on top of your thighs, balls of the feet on the platform.', d: ['Release the lever.', 'Lift your heels as high as possible.', 'Lower slowly into a stretch.'], t: 'Re-engage the safety lever before you stand up.' },
+  M012: { s: 'Chest on the pad, hands on the grips, foot on the kick plate.', d: ['Push the plate back and up with your heel.', 'Squeeze your glute at the top.', 'Return slowly; switch legs after the set.'], t: 'Don\'t arch your lower back to get extra range.' },
+  M013: { s: 'Upper back against the pad, belt or pad across your hips, feet flat about hip-width.', d: ['Drive through your heels to lift your hips.', 'Squeeze your glutes at the top, body in a straight line.', 'Lower under control.'], t: 'Tuck your chin slightly and keep ribs down; don\'t overarch.' },
+  M014: { s: 'Adjust the seat so the handles line up with mid-chest. Back flat on the pad.', d: ['Push the handles forward until arms are almost straight.', 'Pause briefly.', 'Return slowly until hands are beside your chest.'], t: 'Keep shoulders down and back; don\'t lock your elbows.' },
+  M015: { s: 'Set the seat so the handles are at mid-chest. Load plates evenly on both sides.', d: ['Press the handles forward.', 'Control the return.', 'Work one arm at a time if you like.'], t: 'Keep your shoulder blades pinched back throughout.' },
+  M016: { s: 'Seat set so the handles line up with your upper chest. Back flat.', d: ['Press up and forward.', 'Pause near full extension.', 'Lower slowly to the start.'], t: 'Keep your elbows slightly below shoulder height to protect the shoulders.' },
+  M017: { s: 'Chest fly: seat so the handles are at chest height, arms wide, slight bend in elbows. Rear delt: face the pad.', d: ['Bring the handles together in a wide arc (or push them apart for rear delts).', 'Squeeze for a second.', 'Return slowly.'], t: 'Keep the same small elbow bend the whole time; don\'t let arms go behind you too far.' },
+  M018: { s: 'Seat set so the handles are at shoulder height. Back flat on the pad.', d: ['Press the handles overhead.', 'Stop just short of locking elbows.', 'Lower slowly to shoulder level.'], t: 'Don\'t arch your back; keep your core tight.' },
+  M019: { s: 'Sit with the pads on the outside of your upper arms, elbows bent.', d: ['Raise your arms out to the side to shoulder height.', 'Pause briefly.', 'Lower slowly.'], t: 'Lead with your elbows, not your hands; use light weight.' },
+  M020: { s: 'Thigh pads snug, grip the bar a little wider than shoulders.', d: ['Lean back slightly, chest up.', 'Pull the bar to your upper chest, elbows down and back.', 'Let it rise slowly until arms are straight.'], t: 'Don\'t pull behind your neck or swing your body.' },
+  M021: { s: 'Feet on the platform, knees slightly bent, sit tall holding the handle.', d: ['Pull the handle to your lower ribs.', 'Squeeze your shoulder blades together.', 'Extend your arms slowly.'], t: 'Keep your torso still; don\'t rock back to move the weight.' },
+  M022: { s: 'Chest against the pad, adjust the seat so handles are at arm\'s length.', d: ['Pull the handles back toward your ribs.', 'Squeeze your back at the end.', 'Return slowly.'], t: 'Keep your chest on the pad throughout.' },
+  M023: { s: 'Choose the counterweight (more weight = more help). Kneel or stand on the platform.', d: ['Grip the handles.', 'Pull up until your chin is over the bar (or push down for dips).', 'Lower slowly.'], t: 'Step off carefully and only when the platform is at the bottom.' },
+  M024: { s: 'Set the pulleys to the height for your exercise. Choose a handle or rope.', d: ['Stand in a stable, split stance.', 'Pull or push the cable through the movement.', 'Control the return.'], t: 'Keep the weight stack from slamming; stand far enough out for tension.' },
+  M025: { s: 'Upper arms flat on the pad, elbows lined up with the pivot.', d: ['Curl the handles up.', 'Squeeze your biceps at the top.', 'Lower slowly to nearly straight.'], t: 'Don\'t lift your elbows off the pad or swing.' },
+  M026: { s: 'Elbows lined up with the pivot, upper arms supported.', d: ['Press the handles down/out until arms are straight.', 'Pause.', 'Return slowly.'], t: 'Only your forearms should move.' },
+  M027: { s: 'Seat set so the pads rest on your chest or shoulders, feet secured.', d: ['Curl your ribs toward your hips.', 'Exhale and squeeze your abs.', 'Return slowly.'], t: 'Move from the abs, not by pulling with your arms.' },
+  M028: { s: 'Sit with the chest pad on your chest, feet hooked, choose the side.', d: ['Rotate your torso slowly to one side.', 'Pause.', 'Return to the middle; repeat, then switch sides.'], t: 'Use light weight and a smooth, small range.' },
+  M029: { s: 'Hips on the pad, ankles hooked, body in a straight line.', d: ['Hinge forward at the hips.', 'Raise back up to a straight line using glutes and back.', 'Repeat slowly.'], t: 'Stop at straight; don\'t hyperextend.' },
+  M030: { s: 'Set the bar on the hooks at upper-chest height; set safety arms just below your lowest point.', d: ['Step under the bar, resting it on your upper back.', 'Walk out 1–2 steps, squat down, stand up.', 'Walk back in and rack the bar.'], t: 'Always set the safety arms. Use collars on the plates.' },
+  M031: { s: 'Lie with eyes under the bar, feet flat, shoulder blades pinched.', d: ['Unrack the bar with straight arms.', 'Lower it to mid-chest.', 'Press up and back over your shoulders.'], t: 'Use a spotter or safety arms when going heavy.' },
+  M032: { s: 'Pick a weight you can control for all reps. Stand or sit tall.', d: ['Pick up the dumbbells with a flat back.', 'Do your exercise with controlled reps.', 'Put them back on the rack.'], t: 'Lift from the floor with your legs, not your back.' },
+  M033: { s: 'Start light. Feet shoulder-width, bell slightly in front of you.', d: ['Hinge at the hips and grip the handle.', 'Snap your hips forward (swing) or do your chosen move.', 'Let the bell float and fall back between your legs.'], t: 'The power comes from your hips, not your arms. Keep a flat back.' },
+  M034: { s: 'Grip the bar slightly wider than shoulders (or hold the dip handles).', d: ['Hang with straight arms, core tight.', 'Pull up until your chin clears the bar (or lower and push up for dips).', 'Lower slowly.'], t: 'No kipping. Use the assisted machine or bands if needed.' },
+  M035: { s: 'Lay the mat on a clear, flat area.', d: ['Warm up for a few minutes.', 'Do your moves with steady breathing.', 'Finish with a short stretch.'], t: 'Keep your neck neutral during floor work.' },
+  M036: { s: 'Stand on the side rails, clip the safety key to your clothes.', d: ['Start the belt slowly and step on.', 'Raise speed or incline gradually.', 'Slow down for 2–3 minutes before stopping.'], t: 'Enter your speed in RepLog for accurate calories. Don\'t hold the rails while running.' },
+  M037: { s: 'Seat at hip height: a slight bend in the knee at the bottom of the pedal stroke.', d: ['Start pedaling at an easy resistance.', 'Increase resistance or pace.', 'Cool down at low resistance.'], t: 'Enter average watts in RepLog if the bike shows them.' },
+  M038: { s: 'Slide the seat so your knee is slightly bent at full extension.', d: ['Sit back against the backrest.', 'Pedal at a steady pace.', 'Adjust resistance as you go.'], t: 'Easy on the lower back and good for longer sessions.' },
+  M039: { s: 'Saddle at hip height, handlebars about level with the saddle.', d: ['Clip in or strap your feet.', 'Pedal with smooth circles, adding resistance for climbs.', 'Use the brake/knob to stop the flywheel.'], t: 'Always keep some resistance on; never pedal with a free-spinning flywheel.' },
+  M040: { s: 'Step on with the pedals at the lowest point, hold the handles.', d: ['Start moving in smooth strides.', 'Push and pull the handles for upper body work.', 'Increase resistance or incline.'], t: 'Stand tall; don\'t lean on the console.' },
+  M041: { s: 'Strap your feet in, damper around 3–5, hold the handle.', d: ['Drive with your legs first.', 'Then lean back slightly and pull the handle to your lower ribs.', 'Return: arms, body, then knees.'], t: 'Order: legs, body, arms. Enter average watts in RepLog.' },
+  M042: { s: 'Step on, hold the side rails lightly, start slowly.', d: ['Climb at a steady pace.', 'Increase speed gradually.', 'Slow down for 2 minutes before stopping.'], t: 'Stand upright; leaning on the rails reduces the work.' },
+  M043: { s: 'Stand facing the machine, feet hip-width, one handle in each hand.', d: ['Hinge at the hips and pull the handles down past your hips.', 'Bend knees slightly as you pull.', 'Let the handles rise and repeat.'], t: 'Use your core and lats, not just your arms.' },
+  M044: { s: 'Sit with the cranks at shoulder height, feet flat.', d: ['Grip the handles.', 'Pedal with your arms at a steady pace.', 'Adjust resistance.'], t: 'Keep shoulders relaxed and down.' },
+  M045: { s: 'Use a mat and give yourself space.', d: ['Move slowly into each stretch or pose.', 'Hold 20–30 seconds, breathing steadily.', 'Come out of each pose slowly.'], t: 'Mild stretch only; no bouncing or pain.' },
+  M046: { s: 'Load plates on the sled. Choose push (low handles) or pull (strap/rope).', d: ['Lean into the handles, arms straight, hips low.', 'Drive with short, powerful steps.', 'Walk back and rest between runs.'], t: 'Enter total weight (sled + plates). Start light: it\'s tougher than it looks.' },
+  M047: { s: 'Squat down, chest against the tire, fingers under the edge.', d: ['Drive with your legs and hips to lift the tire.', 'Push it over with your hands as it rises.', 'Reset and repeat.'], t: 'Keep a flat back; use a tire you can flip with good form.' },
+  M048: { s: 'Stand in a half squat, one rope end in each hand.', d: ['Move your arms up and down fast to make waves.', 'Work for 20–30 seconds.', 'Rest and repeat.'], t: 'Keep a straight back and a slight knee bend.' },
+  M049: { s: 'Shoulders under the pads, back on the pad, feet mid-platform.', d: ['Release the safety.', 'Squat down in a swinging arc.', 'Stand back up through your heels.'], t: 'Keep knees in line with toes.' },
+  M050: { s: 'Belt around your hips, attached to the machine. Feet shoulder-width on the platform.', d: ['Stand up to take the weight.', 'Squat down, chest up.', 'Stand back up.'], t: 'Easy on the spine since there\'s no bar on your back.' },
+  M051: { s: 'Lie on your back under the platform, feet hip-width.', d: ['Release the safety stops.', 'Lower the platform slowly toward your chest.', 'Press it back up.'], t: 'Keep your lower back flat and re-engage the stops when done.' },
+  M052: { s: 'Stand facing the machine, roller just above one heel, knee lined up with the pivot.', d: ['Curl your heel up toward your glute.', 'Pause.', 'Lower slowly; switch legs after the set.'], t: 'Keep your hips still.' },
+  M053: { s: 'Stand beside the machine, pad on your leg for the direction you\'re training.', d: ['Move the leg against the pad (forward, back, out or in).', 'Pause.', 'Return slowly.'], t: 'Hold the handle for balance; keep your torso still.' },
+  M054: { s: 'Feet secured, knees just behind the pad.', d: ['Hinge forward to a straight line.', 'Curl your body back up with your hamstrings.', 'Lower slowly.'], t: 'Hard exercise: start with a small range.' },
+  M055: { s: 'Lie face-down on the pad, hips at the edge, strap around your ankles.', d: ['Hold the handles.', 'Swing your legs up to body level using your glutes.', 'Lower under control.'], t: 'Don\'t swing beyond straight.' },
+  M056: { s: 'Chest against the pad, seat set so the handles are at arm\'s length.', d: ['Pull the handles toward your ribs.', 'Squeeze your shoulder blades.', 'Return slowly.'], t: 'Keep your chest on the pad.' },
+  M057: { s: 'Chest on the incline pad, feet on the platform.', d: ['Grip the handles.', 'Row toward your chest.', 'Lower slowly.'], t: 'Keep your neck neutral.' },
+  M058: { s: 'Seat set so the handles line up with your lower chest.', d: ['Press forward and slightly down.', 'Pause.', 'Return slowly.'], t: 'Don\'t lock your elbows.' },
+  M059: { s: 'Sit tall, grip the handles beside you.', d: ['Press the handles down until arms are straight.', 'Pause.', 'Let them rise slowly.'], t: 'Keep shoulders down, away from your ears.' },
+  M060: { s: 'Seat set so your shoulders line up with the pivot, elbows on the pads.', d: ['Pull the arms down in an arc.', 'Squeeze your lats.', 'Return slowly.'], t: 'Keep your back on the pad.' },
+  M061: { s: 'Stand or sit under the handles, arms straight.', d: ['Shrug your shoulders straight up.', 'Pause.', 'Lower slowly.'], t: 'Don\'t roll your shoulders.' },
+  M062: { s: 'Sit with your upper arms resting flat on the angled pad.', d: ['Curl the bar or dumbbell up.', 'Squeeze.', 'Lower slowly to nearly straight.'], t: 'Don\'t fully lock out at the bottom.' },
+  M063: { s: 'Stand inside the bar, feet hip-width, grip the handles.', d: ['Flat back, chest up, hips down.', 'Stand up by driving through your feet.', 'Lower by hinging at the hips.'], t: 'Include the bar weight in RepLog.' },
+  M064: { s: 'Grip the angled parts of the bar.', d: ['Do curls or triceps extensions.', 'Move slowly through the full range.', 'Return under control.'], t: 'Include the bar weight in RepLog.' },
+  M065: { s: 'Bar end in the landmine holder, load the other end.', d: ['Hold the loaded end.', 'Press, row or squat with it.', 'Return slowly.'], t: 'Keep your core braced.' },
+  M066: { s: 'Choose a ball you can control.', d: ['Hold the ball at your chest.', 'Throw, slam or squat with it.', 'Catch or pick it up with a flat back.'], t: 'Only slam balls made for slamming.' },
+  M067: { s: 'Choose a light sandbag to start.', d: ['Lift it from the floor with a flat back.', 'Carry, squat or clean it.', 'Put it down with control.'], t: 'Brace your core.' },
+  M068: { s: 'Load the handles evenly.', d: ['Stand between them and pick them up with a flat back.', 'Walk tall with short steps.', 'Set them down with control.'], t: 'Enter the total weight carried in RepLog.' },
+  M069: { s: 'Start with a low box.', d: ['Stand facing the box.', 'Jump up and land softly with both feet.', 'Step down (don\'t jump down).'], t: 'Land with knees bent.' },
+  M070: { s: 'Adjust the strap length; face toward or away from the anchor.', d: ['Lean into the straps.', 'Do rows, presses or squats.', 'Return slowly.'], t: 'More lean = harder.' },
+  M071: { s: 'Choose a band; anchor it securely.', d: ['Step back until there\'s tension.', 'Pull or press smoothly.', 'Return slowly.'], t: 'Check for tears before using.' },
+  M072: { s: 'Kneel on a mat, hands on the wheel.', d: ['Roll forward slowly.', 'Stop before your back sags.', 'Pull back with your abs.'], t: 'Start with a short range.' },
+  M073: { s: 'Place the roller on a mat under the muscle you want to roll.', d: ['Use your arms to roll slowly.', 'Pause on tight spots for 20–30 seconds.', 'Breathe and relax.'], t: 'Avoid rolling directly on joints or your lower back.' },
+  M074: { s: 'Seat at hip height.', d: ['Push and pull the handles while pedaling.', 'Go hard in short bursts.', 'Recover between rounds.'], t: 'The harder you go, the more resistance you get.' },
+  M075: { s: 'Stand on the belt, hold the rails.', d: ['Start walking near the front.', 'Move forward on the belt to go faster.', 'Slow down by moving back.'], t: 'You control the speed with your feet.' },
+  M076: { s: 'Feet on the pedals, hands on the handles.', d: ['Climb by pushing with your legs and pulling with your arms.', 'Keep a steady rhythm.', 'Slow down to stop.'], t: 'Keep your hips close to the machine.' },
+  M077: { s: 'Rope length: the handles reach your armpits when you stand on the middle.', d: ['Turn the rope with your wrists.', 'Jump just high enough to clear it.', 'Land softly on the balls of your feet.'], t: 'Start with short rounds.' },
+  M078: { s: 'Wrap hands, wear gloves.', d: ['Stand in your stance.', 'Throw punches in combos.', 'Rest between rounds.'], t: 'Keep your wrists straight on impact.' },
+  M079: { s: 'Wear the slide booties; start at one end.', d: ['Push off sideways.', 'Glide to the other end.', 'Push back the other way.'], t: 'Stay low.' },
+  M080: { s: 'Make sure the trampoline is stable.', d: ['Start with gentle bounces.', 'Keep your knees soft.', 'Add moves gradually.'], t: 'Keep the center of the mat.' },
+  M081: { s: 'Warm up first.', d: ['Work hard for the interval.', 'Rest for the set time.', 'Repeat the rounds.'], t: 'Scale moves to your level.' },
+  M082: { s: 'Choose a step height.', d: ['Step up with your whole foot.', 'Follow the routine.', 'Step down carefully.'], t: 'Place your whole foot on the step.' },
+  M083: { s: 'Wear supportive shoes.', d: ['Follow the instructor.', 'Keep moving.', 'Go at your own level.'], t: 'Low-impact options are always fine.' },
+  M084: { s: 'Wrap hands, wear gloves.', d: ['Follow the drills.', 'Punch with good form.', 'Breathe.'], t: 'Speed comes after technique.' },
+  M085: { s: 'Use a mat or reformer.', d: ['Move slowly.', 'Breathe.', 'Focus on core control.'], t: 'Quality over quantity.' },
+  M086: { s: 'Stand with relaxed knees.', d: ['Follow the slow movements.', 'Breathe deeply.', 'Keep your weight centered.'], t: 'Gentle, continuous motion.' },
+  M087: { s: 'Stand in chest-deep water.', d: ['Follow the class moves.', 'Use the water as resistance.', 'Stay hydrated.'], t: 'Wear water shoes if the floor is slippery.' },
+  M088: { s: 'Comfortable shoes; start easy.', d: ['Walk at a steady pace.', 'Swing your arms.', 'Speed up to brisk.'], t: 'Pick the effort that matches your pace in RepLog.' },
+  M089: { s: 'Adjust poles so elbows are at 90°.', d: ['Plant the pole opposite your forward foot.', 'Push back with each step.', 'Keep a steady rhythm.'], t: 'Good for arms as well as legs.' },
+  M090: { s: 'Proper running shoes; warm up walking.', d: ['Run at a comfortable pace.', 'Breathe steadily.', 'Cool down walking.'], t: 'Pick the effort that matches your pace in RepLog.' },
+  M091: { s: 'Good shoes, water, and a planned route.', d: ['Start at an easy pace.', 'Shorten your steps on hills.', 'Rest when needed.'], t: 'Tell someone your route.' },
+  M092: { s: 'Helmet on; check tyres and brakes.', d: ['Start easy.', 'Keep a steady cadence.', 'Use gears on hills.'], t: 'Follow traffic rules.' },
+  M093: { s: 'Choose a lane matching your speed.', d: ['Warm up with easy lengths.', 'Swim your set.', 'Rest at the wall between sets.'], t: 'Breathe out underwater.' },
+  M094: { s: 'Find a safe staircase.', d: ['Climb at a steady pace.', 'Use the handrail if needed.', 'Walk down carefully.'], t: 'Look where you step.' }
+};
+
+</script>
 <style>
   :root { --bg:#0F1214; --card:#1A1F23; --line:#2C3338; --text:#F2F4F5; --muted:#A3ADB5; --soft:#C9D1D7; --acc:#C6F432; --err:#FF8A80; }
   * { box-sizing: border-box; }
@@ -60,6 +210,11 @@
   .goal:last-child { border-bottom: 0; }
   .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   .chip { height: 36px; width: auto; padding: 0 12px; font-size: 14px; font-weight: 500; border-radius: 10px; background: transparent; color: var(--soft); border: 1px solid var(--line); }
+  .howto h3 { margin: 0 0 6px; font-size: 15px; }
+  .howto ol { margin: 8px 0; padding-left: 20px; color: var(--soft); font-size: 15px; line-height: 1.5; }
+  .howto p { font-size: 14px; line-height: 1.5; }
+  .howto .tip { color: var(--acc); }
+  details.howto summary { font-weight: 600; font-size: 16px; cursor: pointer; }
   .item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--line); background: transparent; color: var(--text); text-align: left; height: auto; border-radius: 0; font-weight: 400; font-size: 15px; }
   .item:last-child { border-bottom: 0; }
   .item small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
@@ -155,7 +310,7 @@
     <button class="item" id="b-to-goals"><span class="grow">Goals<small>Add, edit or finish your goals</small></span><span class="muted">›</span></button>
   </div>
   <button class="danger" id="b-logout">Log out</button>
-  <p class="muted" style="text-align:center">RepLog version 2026-11-07c</p>
+  <p class="muted" style="text-align:center">RepLog version 2026-11-07e</p>
 </section>
 
 <!-- PROFILE -->
@@ -235,6 +390,7 @@
   <div style="flex:1"></div>
   <button class="primary" id="b-go" style="height:60px;font-size:18px">▶ Start activity</button>
   <div class="art" id="pl-art"></div>
+  <div class="card howto" id="pl-howto"></div>
 </section>
 
 <!-- ACTIVE -->
@@ -258,6 +414,7 @@
   </div>
   <p class="muted" id="a-hint" style="text-align:center"></p>
   <div class="art" id="a-art"></div>
+  <details class="card howto"><summary>How to</summary><div id="a-howto"></div></details>
   <div class="grid2">
     <button class="link" id="b-discard-active">Discard this activity</button>
     <button class="link" id="b-cancel-active" style="color:var(--err)">Cancel workout</button>
@@ -452,6 +609,14 @@ $('b-logout').onclick = function () {
     var keep = S.token; S.token = t; call('logout', {}).catch(function () {}); S.token = keep;
   });
 };
+
+/* ---------- how-to (instructions.js) ---------- */
+function howtoHtml(m) {
+  var h = (typeof INSTRUCTIONS !== 'undefined') && INSTRUCTIONS[m.machine_id];
+  if (!h) return '<h3>How to</h3><p class="muted">No instructions yet. Follow the placard on the machine, start light, and keep the movement slow and controlled.</p>';
+  return '<h3>How to</h3><p class="muted">' + esc(h.s) + '</p><ol>' + h.d.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' +
+    '<p class="tip">Tip: ' + esc(h.t) + '</p><p class="muted" style="font-size:12px;margin-top:6px">General guidance. Stop if anything hurts.</p>';
+}
 
 /* ---------- goals & profile ---------- */
 function refreshGoals() { call('getGoals', {}).then(function (o) { DATA.goals = o.goals; renderGoalsHome(); }).catch(function () {}); }
@@ -662,6 +827,7 @@ function openPlan(m, keepLoad) {
   S.current = { machine: m, start: null, end: null }; save();
   $('pl-name').textContent = m.name; $('pl-cat').textContent = m.category;
   $('pl-art').innerHTML = machineArt(m, 140);
+  $('pl-howto').innerHTML = howtoHtml(m);
   var key = lookupKey(m), strength = isStrength(m);
   $('pl-strength').style.display = strength ? 'grid' : 'none';
   $('pl-cardio').style.display = (key && key !== 'Elliptical') ? 'block' : 'none';
@@ -811,6 +977,7 @@ function renderActive() {
   if (!c.segStart) { c.phase = 'work'; c.segStart = new Date(c.start).getTime(); c.work = c.work || 0; c.rest = c.rest || 0; c.pause = c.pause || 0; c.setsDone = c.setsDone || 0; save(); }
   $('a-name').textContent = c.machine.name; $('a-plan').textContent = planText(c);
   $('a-art').innerHTML = machineArt(c.machine, 140);
+  $('a-howto').innerHTML = howtoHtml(c.machine).replace('<h3>How to</h3>', '');
   $('a-start').textContent = fmtTime(c.start);
   $('a-split').style.display = c.split ? 'grid' : 'none';
   $('b-set').style.display = c.split ? 'block' : 'none';
