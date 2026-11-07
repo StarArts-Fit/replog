@@ -310,7 +310,7 @@ var INSTRUCTIONS = {
     <button class="item" id="b-to-goals"><span class="grow">Goals<small>Add, edit or finish your goals</small></span><span class="muted">›</span></button>
   </div>
   <button class="danger" id="b-logout">Log out</button>
-  <p class="muted" style="text-align:center">RepLog version 2026-11-07f</p>
+  <p class="muted" style="text-align:center">RepLog version 2026-11-07g</p>
 </section>
 
 <!-- PROFILE -->
@@ -561,6 +561,13 @@ function loggedIn(o, msg) {
   busy(false); S.token = o.token; S.user_id = o.user_id;
   var em = ($('f-user').value || $('f-email').value || '').trim(); if (em) S.lastEmail = em;
   save();
+  // A real page load right after the form is sent is what makes iPhone/Chrome offer "Save password?".
+  // The login is already stored on the phone, so the reloaded page opens straight to the home screen.
+  if (!S.reloadedForPw || S.reloadedForPw !== em) {
+    S.reloadedForPw = em; save();
+    setTimeout(function () { location.replace(location.href.split('#')[0].split('?')[0]); }, 60);
+    return;
+  }
   $('f-pass').value = ''; $('f-npass').value = ''; $('f-invite').value = '';
   toast(msg); boot();
 }
