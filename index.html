@@ -271,7 +271,7 @@ function call(action, payload) {
       clearTimeout(timer);
       if (o.ok) return o;
       if (o.code === 'auth') { S.token = ''; save(); busy(false); show('setup'); }
-      throw new Error(o.error);
+      var err = new Error(o.error); err.code = o.code; throw err;
     });
 }
 
@@ -556,7 +556,15 @@ function saveSet(next) {
     pause_min: (c.pause || 0) >= 1 ? Math.round(c.pause / 60 * 100) / 100 : ''
   };
   busy(true);
-  call('logSet', payload).then(function (o) {
+  call('logSet', payload).catch(function (e) {
+    if (e.code !== 'no_workout') throw e;
+    // The workout row was removed from the Sheet (e.g. while tidying): start a fresh one and save this activity into it
+    return call('startWorkout', { start: S.workout.start }).then(function (w) {
+      S.workout.id = w.workout_id; S.workout.count = 0; save();
+      payload.workout_id = w.workout_id;
+      return call('logSet', payload);
+    });
+  }).then(function (o) {
     busy(false);
     S.workout.count = (S.workout.count || 0) + 1;
     S.last = { machine: m, load: c.load };
@@ -593,7 +601,11 @@ function finishWorkout() {
     var tgt = DATA.week && DATA.week.kcalTarget;
     $('u-pct').textContent = tgt && w.total_kcal ? Math.round(100 * w.total_kcal / tgt) + '% of your ' + tgt.toLocaleString() + ' kcal weekly target' : '';
     show('summary');
-  }).catch(function (e) { busy(false); toast(e.message, true); });
+  }).catch(function (e) {
+    busy(false);
+    if (e.code === 'no_workout') { S.workout = null; S.current = null; save(); renderHome(); show('home'); toast('That workout was no longer in the Sheet, so it was closed.'); return; }
+    toast(e.message, true);
+  });
 }
 
 /* ---------- cancel / discard ---------- */
@@ -619,7 +631,11 @@ function cancelWorkout() {
       busy(false); S.workout = null; S.current = null; save();
       call('week', { user_id: S.user_id }).then(function (r) { DATA.week = r.week; renderHome(); }).catch(function () {});
       renderHome(); show('home'); toast('Workout cancelled');
-    }).catch(function (e) { busy(false); toast(e.message, true); });
+    }).catch(function (e) {
+      busy(false);
+      if (e.code === 'no_workout') { S.workout = null; S.current = null; save(); renderHome(); show('home'); toast('Workout cancelled'); return; }
+      toast(e.message, true);
+    });
   });
 }
 $('b-cancel-pick').onclick = cancelWorkout;
