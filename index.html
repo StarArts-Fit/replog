@@ -235,6 +235,28 @@ var INSTRUCTIONS = {
   .pw { position: relative; }
   .pw input { padding-right: 76px; }
   .pwbtn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: auto; height: 40px; padding: 0 12px; background: transparent; color: var(--acc); font-size: 15px; font-weight: 600; border-radius: 10px; }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .tabs button { height: 40px; font-size: 14px; font-weight: 600; background: var(--card); color: var(--soft); border: 1px solid var(--line); border-radius: 10px; }
+  .tabs button.on { background: var(--acc); color: #0F1214; border-color: var(--acc); }
+  .filters { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+  .filters select, .filters input { height: 42px; font-size: 15px; padding: 0 10px; }
+  .filters label { font-size: 12px; gap: 4px; }
+  label.check { flex-direction: row; align-items: center; gap: 10px; font-size: 14px; }
+  label.check input { width: 22px; height: 22px; accent-color: var(--acc); }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px; min-width: 0; }
+  .kpi .k { color: var(--muted); font-size: 12px; }
+  .kpi .v { font-size: 20px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .kpi .d { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .tip { min-height: 20px; font-size: 14px; color: var(--soft); margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+  .legend { display: flex; gap: 14px; font-size: 13px; color: var(--soft); margin-top: 6px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .tbl th { color: var(--muted); font-weight: 500; text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); font-size: 12px; }
+  .tbl td { text-align: right; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+  .tbl th:first-child, .tbl td:first-child { text-align: left; }
+  .tbl tr:last-child td { border-bottom: 0; }
   #busy { position: fixed; inset: 0; background: rgba(15,18,20,.6); display: none; align-items: center; justify-content: center; z-index: 8; font-size: 16px; }
 </style>
 </head>
@@ -299,6 +321,7 @@ var INSTRUCTIONS = {
     <div id="h-goals"></div>
   </div>
   <div style="flex:1"></div>
+  <button class="ghost" id="b-reports-home">📊 Reports</button>
   <button class="primary" id="b-start" style="height:60px;font-size:18px">Start workout</button>
 </section>
 
@@ -311,7 +334,7 @@ var INSTRUCTIONS = {
     <button class="item" id="b-to-watch"><span class="grow">Apple Watch<small>Set, Pause and End from your watch</small></span><span class="muted">›</span></button>
   </div>
   <button class="danger" id="b-logout">Log out</button>
-  <p class="muted" style="text-align:center">RepLog version 2026-11-07i</p>
+  <p class="muted" style="text-align:center">RepLog version 2026-11-08j</p>
 </section>
 <section id="s-watch">
   <div class="row"><button class="icon" data-go="settings" aria-label="Back">‹</button><h1>Apple Watch</h1></div>
@@ -346,6 +369,36 @@ var INSTRUCTIONS = {
     </ol>
     <p class="muted">Each press takes a second or two and needs the phone nearby or Wi-Fi. When you pick up the phone, the timer catches up with what you pressed on the watch.</p>
   </div>
+</section>
+<section id="s-reports">
+  <div class="row between"><div class="row"><button class="icon" id="b-reports-back" aria-label="Back">‹</button><h1>Reports</h1></div><button class="chip" id="b-r-refresh" style="margin:0">↻ Refresh</button></div>
+  <div class="tabs" id="r-tabs">
+    <button data-rt="live">Workout</button><button data-rt="stats">Stats</button><button data-rt="machines">Machines</button><button data-rt="goals">Goals</button>
+  </div>
+  <div class="card filters" id="r-filters">
+    <div class="grid2">
+      <label>Period<select id="rf-period">
+        <option value="today">Today</option><option value="week" selected>This week</option><option value="lastweek">Last week</option>
+        <option value="month">This month</option><option value="lastmonth">Last month</option>
+        <option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="year">This year</option>
+        <option value="all">All time</option><option value="custom">Custom dates…</option></select></label>
+      <label class="rf-g">Group by<select id="rf-group">
+        <option value="day">Day</option><option value="week">Week</option><option value="month">Month</option>
+        <option value="machine">Machine</option><option value="category">Category</option></select></label>
+    </div>
+    <div class="grid2" id="rf-custom" style="display:none">
+      <label>From<input type="date" id="rf-from"></label><label>To<input type="date" id="rf-to"></label>
+    </div>
+    <div class="grid2 rf-x">
+      <label>Category<select id="rf-cat"></select></label>
+      <label>Muscle<select id="rf-muscle"></select></label>
+    </div>
+    <label class="rf-x">Machine<select id="rf-machine"></select></label>
+    <label class="check rf-c"><input type="checkbox" id="rf-compare"> Compare with the previous period</label>
+  </div>
+  <div id="r-body" style="display:flex;flex-direction:column;gap:14px"></div>
+  <button class="secondary" id="b-ask-claude">✦ Ask Claude about this report</button>
+  <p class="muted" style="text-align:center;margin-top:-6px">Copies a summary of what's on screen and opens Claude. Paste it, then ask your question.</p>
 </section>
 
 <!-- PROFILE -->
@@ -403,6 +456,7 @@ var INSTRUCTIONS = {
   <div class="row"><button class="icon" data-go="back" aria-label="Back">‹</button><div><div class="muted">Choose machine</div><h2 id="p-sub">Workout in progress</h2></div></div>
   <input id="f-search" type="search" placeholder="Search machines">
   <div id="m-list"></div>
+  <button class="ghost" id="b-reports-pick">📊 This workout so far</button>
   <button class="ghost" id="b-finish-pick">Finish workout</button>
   <button class="danger" id="b-cancel-pick">Cancel workout</button>
 </section>
@@ -1085,7 +1139,7 @@ function liveSync() {
   }).catch(function () { syncBusy = false; if (syncAgain) setTimeout(liveSync, 3000); });
 }
 function liveClear(aid) { if (aid) call('liveSync', { clear: true, aid: aid }).catch(function () {}); }
-function startSyncLoop() { clearInterval(syncTimer); syncTimer = setInterval(function () { if (screen === 'active' && document.visibilityState === 'visible') liveSync(); }, 8000); }
+function startSyncLoop() { clearInterval(syncTimer); syncTimer = setInterval(function () { if (screen === 'active' && document.visibilityState === 'visible') liveSync(); }, 3000); }
 document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && screen === 'active') liveSync(); });
 
 function renderActive() {
@@ -1251,6 +1305,364 @@ $('b-cancel-active').onclick = cancelWorkout;
 $('b-cancel-log').onclick = cancelWorkout;
 $('b-discard-active').onclick = discardActivity;
 $('b-discard-log').onclick = discardActivity;
+
+/* ---------- reports ---------- */
+// The script sends only this user's own activities and weigh-ins; everything below slices them on the phone.
+var R = { tab: 'stats', from: 'home', sel: null };
+function pad2(x) { return String(x).padStart(2, '0'); }
+function ds(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function pd(s) { var a = s.split('-'); return new Date(+a[0], a[1] - 1, +a[2]); }
+function addD(s, k) { var d = pd(s); d.setDate(d.getDate() + k); return ds(d); }
+function addM(s, k) { var d = pd(s), day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + k); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); return ds(d); }
+function monday(s) { var d = pd(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ds(d); }
+function nDays(a, b) { return Math.round((pd(b) - pd(a)) / 86400000) + 1; }
+function shortDate(s) { return pd(s).toLocaleDateString([], { month: 'short', day: 'numeric' }); }
+function machineById(id) { return (DATA.machines || []).find(function (m) { return m.machine_id === id; }) || { name: id, category: 'Other', primary_muscles: '' }; }
+
+var PERIOD_NAMES = { today: 'Today', week: 'This week', lastweek: 'Last week', month: 'This month', lastmonth: 'Last month', '30': 'Last 30 days', '90': 'Last 90 days', year: 'This year', all: 'All time', custom: 'Custom dates' };
+function periodRange() {
+  var t = ds(new Date()), p = $('rf-period').value, mon = monday(t), first = t.slice(0, 8) + '01';
+  var sets = (DATA.hist && DATA.hist.sets) || [];
+  switch (p) {
+    case 'today': return { a: t, b: t, pa: addD(t, -1), pb: addD(t, -1) };
+    case 'week': return { a: mon, b: t, pa: addD(mon, -7), pb: addD(t, -7) };
+    case 'lastweek': return { a: addD(mon, -7), b: addD(mon, -1), pa: addD(mon, -14), pb: addD(mon, -8) };
+    case 'month': return { a: first, b: t, pa: addM(first, -1), pb: addM(t, -1) };
+    case 'lastmonth': return { a: addM(first, -1), b: addD(first, -1), pa: addM(first, -2), pb: addD(addM(first, -1), -1) };
+    case '30': case '90': var k = +p; return { a: addD(t, 1 - k), b: t, pa: addD(t, 1 - 2 * k), pb: addD(t, -k) };
+    case 'year': var y = t.slice(0, 4); return { a: y + '-01-01', b: t, pa: (y - 1) + '-01-01', pb: addM(t, -12) };
+    case 'custom':
+      var a = $('rf-from').value || t, b = $('rf-to').value || t; if (a > b) { var x = a; a = b; b = x; }
+      var len = nDays(a, b); return { a: a, b: b, pa: addD(a, -len), pb: addD(a, -1) };
+    default:
+      var min = sets.reduce(function (m, s) { return s.d < m ? s.d : m; }, t);
+      return { a: min, b: t, pa: null, pb: null };
+  }
+}
+function filterSets(a, b, ignoreMachine) {
+  var cat = $('rf-cat').value, mus = $('rf-muscle').value, mid = ignoreMachine ? '' : $('rf-machine').value;
+  return ((DATA.hist && DATA.hist.sets) || []).filter(function (s) {
+    if (a && (s.d < a || s.d > b)) return false;
+    var m = machineById(s.m);
+    if (cat && m.category !== cat) return false;
+    if (mus && String(m.primary_muscles || '').toLowerCase().indexOf(mus.toLowerCase()) < 0) return false;
+    if (mid && s.m !== mid) return false;
+    return true;
+  });
+}
+function sumUp(list) {
+  var t = { workouts: 0, acts: list.length, min: 0, kcal: 0, vol: 0, sets: 0, work: 0, rest: 0, pause: 0 }, w = {};
+  list.forEach(function (s) {
+    w[s.w] = 1; t.min += s.min || 0; t.kcal += s.kcal || 0; t.vol += s.vol || 0; t.sets += s.sets || 0;
+    t.work += s.work || 0; t.rest += s.rest || 0; t.pause += s.pause || 0;
+  });
+  t.workouts = Object.keys(w).length;
+  return t;
+}
+var METRICS = { kcal: { name: 'kcal', unit: 'kcal' }, min: { name: 'Active minutes', unit: 'min' }, vol: { name: 'Volume', unit: 'lb' }, workouts: { name: 'Workouts', unit: '' }, acts: { name: 'Activities', unit: '' } };
+function fmtV(v, metric) { return metric === 'min' ? (Math.round(v * 10) / 10).toLocaleString() : Math.round(v).toLocaleString(); }
+function delta(cur, prev) {
+  if (prev == null) return '';
+  if (!prev) return cur ? 'new vs prev' : 'same as prev';
+  var p = Math.round((cur - prev) / prev * 100);
+  return (p > 0 ? '▲ ' : p < 0 ? '▼ ' : '') + Math.abs(p) + '% vs prev';
+}
+
+// buckets for the chart: time buckets cover the whole period (empty ones too); machine/category only where there is data
+function bucketsFor(group, a, b, list) {
+  var keys = [], seen = {};
+  if (group === 'day' || group === 'week' || group === 'month') {
+    var k = group === 'day' ? a : group === 'week' ? monday(a) : a.slice(0, 7) + '-01', guard = 0;
+    while (k <= b && guard++ < 400) {
+      keys.push(group === 'month' ? k.slice(0, 7) : k);
+      k = group === 'day' ? addD(k, 1) : group === 'week' ? addD(k, 7) : addM(k, 1);
+    }
+  } else {
+    list.forEach(function (s) { var key = keyOf(group, s); if (!seen[key]) { seen[key] = 1; keys.push(key); } });
+  }
+  return keys;
+}
+function keyOf(group, s) {
+  if (group === 'day') return s.d;
+  if (group === 'week') return monday(s.d);
+  if (group === 'month') return s.d.slice(0, 7);
+  var m = machineById(s.m);
+  return group === 'machine' ? m.name : (m.category || 'Other');
+}
+function labelOf(group, key, span) {
+  if (group === 'day') return span <= 7 ? pd(key).toLocaleDateString([], { weekday: 'short' }) : shortDate(key);
+  if (group === 'week') return shortDate(key);
+  if (group === 'month') return pd(key + '-01').toLocaleDateString([], { month: 'short', year: '2-digit' });
+  return key;
+}
+function aggregate(group, keys, list) {
+  var by = {};
+  keys.forEach(function (k) { by[k] = []; });
+  list.forEach(function (s) { var k = keyOf(group, s); if (by[k]) by[k].push(s); });
+  return keys.map(function (k) { return sumUp(by[k]); });
+}
+
+/* charts: thin bars with rounded tops, recessive grid; tap a bar or point to read its value */
+var CUR = '#C6F432', PREV = '#6B7680';
+function niceMax(v) { if (v <= 0) return 1; var p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+function barPath(x, y, w, h, r) { if (h <= 0) return ''; r = Math.min(r, w / 2, h); return 'M' + x + ',' + (y + h) + 'V' + (y + r) + 'Q' + x + ',' + y + ' ' + (x + r) + ',' + y + 'H' + (x + w - r) + 'Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + 'V' + (y + h) + 'Z'; }
+function barChart(id, labels, cur, prev, tips) {
+  var W = 340, H = 170, L = 36, B = 22, T = 8, n = labels.length;
+  var max = niceMax(Math.max.apply(null, cur.concat(prev || []).concat([0])));
+  var pw = (W - L - 4) / Math.max(n, 1), gap = 2, bw = prev ? Math.max(2, (pw - 6) / 2 - gap / 2) : Math.max(3, Math.min(28, pw - 6));
+  var y = function (v) { return T + (H - T - B) * (1 - v / max); };
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">';
+  [0, 0.5, 1].forEach(function (f) {
+    var v = max * f, yy = y(v);
+    svg += '<line x1="' + L + '" x2="' + W + '" y1="' + yy + '" y2="' + yy + '" stroke="#2C3338" stroke-width="1"/>';
+    svg += '<text x="' + (L - 6) + '" y="' + (yy + 4) + '" fill="#A3ADB5" font-size="10" text-anchor="end">' + (v >= 1000 ? Math.round(v / 100) / 10 + 'k' : Math.round(v)) + '</text>';
+  });
+  var every = Math.ceil(n / 7);
+  for (var i = 0; i < n; i++) {
+    var x0 = L + i * pw + (pw - (prev ? bw * 2 + gap : bw)) / 2;
+    if (prev) svg += '<path d="' + barPath(x0, y(prev[i]), bw, y(0) - y(prev[i]), 4) + '" fill="' + PREV + '"/>';
+    var xc = prev ? x0 + bw + gap : x0;
+    svg += '<path d="' + barPath(xc, y(cur[i]), bw, y(0) - y(cur[i]), 4) + '" fill="' + CUR + '"/>';
+    svg += '<rect x="' + (L + i * pw) + '" y="0" width="' + pw + '" height="' + H + '" fill="transparent" data-tip="' + esc(tips[i]) + '" style="cursor:pointer"/>';
+    if (i % every === 0) svg += '<text x="' + (L + i * pw + pw / 2) + '" y="' + (H - 6) + '" fill="#A3ADB5" font-size="10" text-anchor="middle">' + esc(String(labels[i]).slice(0, 9)) + '</text>';
+  }
+  svg += '</svg>';
+  return '<div class="chart" id="' + id + '"><div class="tip">Tap a bar to see its value</div>' + svg +
+    (prev ? '<div class="legend"><span><i style="background:' + CUR + '"></i>This period</span><span><i style="background:' + PREV + '"></i>Previous period</span></div>' : '') + '</div>';
+}
+function lineChart(id, pts, unit, ref) {   // pts: [{x: 'yyyy-mm-dd', y: number, tip}]
+  if (!pts.length) return '<p class="muted">No data in this period.</p>';
+  var W = 340, H = 170, L = 40, B = 22, T = 10;
+  var ys = pts.map(function (p) { return p.y; }); if (ref != null) ys.push(ref);
+  var lo = Math.min.apply(null, ys), hi = Math.max.apply(null, ys); if (hi === lo) { hi += 1; lo -= 1; }
+  var padv = (hi - lo) * 0.1; lo -= padv; hi += padv;
+  var x0 = pd(pts[0].x).getTime(), x1 = pd(pts[pts.length - 1].x).getTime(); if (x1 === x0) x1 = x0 + 86400000;
+  var X = function (s) { return L + (W - L - 10) * (pd(s).getTime() - x0) / (x1 - x0); }, Y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">';
+  [lo + padv, (lo + hi) / 2, hi - padv].forEach(function (v) {
+    svg += '<line x1="' + L + '" x2="' + W + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#2C3338"/><text x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" fill="#A3ADB5" font-size="10" text-anchor="end">' + Math.round(v) + '</text>';
+  });
+  if (ref != null) svg += '<line x1="' + L + '" x2="' + W + '" y1="' + Y(ref) + '" y2="' + Y(ref) + '" stroke="#C9D1D7" stroke-dasharray="4 4"/><text x="' + (W - 2) + '" y="' + (Y(ref) - 4) + '" fill="#C9D1D7" font-size="10" text-anchor="end">target ' + ref + '</text>';
+  svg += '<polyline fill="none" stroke="' + CUR + '" stroke-width="2" stroke-linejoin="round" points="' + pts.map(function (p) { return X(p.x) + ',' + Y(p.y); }).join(' ') + '"/>';
+  pts.forEach(function (p) {
+    svg += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="4" fill="' + CUR + '" stroke="#1A1F23" stroke-width="2"/>';
+    svg += '<circle cx="' + X(p.x) + '" cy="' + Y(p.y) + '" r="14" fill="transparent" data-tip="' + esc(p.tip) + '" style="cursor:pointer"/>';
+  });
+  svg += '<text x="' + L + '" y="' + (H - 6) + '" fill="#A3ADB5" font-size="10">' + shortDate(pts[0].x) + '</text><text x="' + (W - 10) + '" y="' + (H - 6) + '" fill="#A3ADB5" font-size="10" text-anchor="end">' + shortDate(pts[pts.length - 1].x) + '</text>';
+  return '<div class="chart" id="' + id + '"><div class="tip">Tap a point to see its value</div>' + svg + '</div>';
+}
+$('r-body').addEventListener('click', function (e) {
+  var t = e.target.closest('[data-tip]');
+  if (t) { var c = t.closest('.chart'); if (c) c.querySelector('.tip').textContent = t.getAttribute('data-tip'); return; }
+  var m = e.target.closest('[data-rm]');
+  if (m) { R.sel = m.getAttribute('data-rm'); renderReports(); window.scrollTo(0, 0); return; }
+  var mt = e.target.closest('[data-metric]');
+  if (mt) { R.metric = mt.getAttribute('data-metric'); renderReports(); }
+  if (e.target.closest('#b-rm-all')) { R.sel = null; renderReports(); }
+});
+
+/* filters */
+function fillReportFilters() {
+  var ms = DATA.machines || [];
+  var cats = []; ms.forEach(function (m) { if (m.category && cats.indexOf(m.category) < 0) cats.push(m.category); });
+  var mus = []; ms.forEach(function (m) { String(m.primary_muscles || '').split(/[,;\/]/).forEach(function (x) { x = x.trim().toLowerCase(); if (x && mus.indexOf(x) < 0) mus.push(x); }); });
+  mus.sort();
+  var keep = function (id) { return $(id).value; };
+  var c = keep('rf-cat'), u = keep('rf-muscle');
+  $('rf-cat').innerHTML = '<option value="">All categories</option>' + cats.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('');
+  $('rf-muscle').innerHTML = '<option value="">All muscles</option>' + mus.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('');
+  $('rf-cat').value = c; $('rf-muscle').value = u;
+  fillMachineFilter();
+}
+function fillMachineFilter() {
+  var c = $('rf-cat').value, keep = $('rf-machine').value;
+  var used = {}; ((DATA.hist && DATA.hist.sets) || []).forEach(function (s) { used[s.m] = 1; });
+  var ms = (DATA.machines || []).filter(function (m) { return used[m.machine_id] && (!c || m.category === c); });
+  $('rf-machine').innerHTML = '<option value="">All machines</option>' + ms.map(function (m) { return '<option value="' + esc(m.machine_id) + '">' + esc(m.name) + '</option>'; }).join('');
+  $('rf-machine').value = ms.some(function (m) { return m.machine_id === keep; }) ? keep : '';
+}
+['rf-period', 'rf-group', 'rf-muscle', 'rf-machine', 'rf-compare', 'rf-from', 'rf-to'].forEach(function (id) {
+  $(id).addEventListener('change', function () {
+    if (id === 'rf-machine') R.sel = $('rf-machine').value || null;
+    $('rf-custom').style.display = $('rf-period').value === 'custom' ? 'grid' : 'none';
+    renderReports();
+  });
+});
+$('rf-cat').addEventListener('change', function () { fillMachineFilter(); R.sel = null; renderReports(); });
+
+/* open / tabs */
+function openReports(tab, from) {
+  R.from = from || screen; R.tab = tab || R.tab;
+  if (!R.metric) R.metric = 'kcal';
+  busy(true, 'Loading reports…');
+  call('history', {}).then(function (o) {
+    busy(false); DATA.hist = o; if (o.goals) DATA.goals = o.goals;
+    fillReportFilters(); renderReports(); show('reports'); window.scrollTo(0, 0);
+  }).catch(function (e) { busy(false); toast(e.message, true); });
+}
+$('r-tabs').onclick = function (e) { var b = e.target.closest('[data-rt]'); if (!b) return; R.tab = b.getAttribute('data-rt'); renderReports(); };
+$('b-reports-home').onclick = function () { openReports(S.workout ? 'live' : 'stats', 'home'); };
+$('b-reports-pick').onclick = function () { openReports('live', 'pick'); };
+$('b-reports-back').onclick = function () { if (R.from === 'pick') renderPick(); if (R.from === 'home') renderHome(); show(R.from === 'reports' ? 'home' : R.from); };
+$('b-r-refresh').onclick = function () { openReports(R.tab, R.from); };
+
+function renderReports() {
+  document.querySelectorAll('#r-tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-rt') === R.tab); });
+  var t = R.tab;
+  $('r-filters').style.display = t === 'live' ? 'none' : 'flex';
+  document.querySelectorAll('.rf-g').forEach(function (el) { el.style.display = t === 'stats' ? 'flex' : 'none'; });
+  document.querySelectorAll('.rf-c').forEach(function (el) { el.style.display = t === 'stats' ? 'flex' : 'none'; });
+  document.querySelectorAll('.rf-x').forEach(function (el) { el.style.display = t === 'goals' ? 'none' : (el.tagName === 'LABEL' ? 'flex' : 'grid'); });
+  $('r-body').innerHTML = t === 'live' ? renderLiveReport() : t === 'stats' ? renderStatsReport() : t === 'machines' ? renderMachineReport() : renderGoalsReport();
+}
+
+/* --- Workout (live) --- */
+function renderLiveReport() {
+  var sets = (DATA.hist && DATA.hist.sets) || [], wid = S.workout && S.workout.id, title, list;
+  if (wid) { list = sets.filter(function (s) { return s.w === wid; }); title = 'Workout in progress · started ' + new Date(S.workout.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+  else {
+    var last = sets.slice().sort(function (a, b) { return (a.t || a.d) < (b.t || b.d) ? 1 : -1; })[0];
+    if (!last) { R.text = 'No workouts logged yet.'; return '<p class="muted">No workouts yet. Start one from the home screen.</p>'; }
+    list = sets.filter(function (s) { return s.w === last.w; }); title = 'No workout running · your last workout, ' + shortDate(last.d);
+  }
+  list = list.slice().sort(function (a, b) { return (a.t || '') < (b.t || '') ? -1 : 1; });
+  var tot = sumUp(list), c = S.current, run = null;
+  if (wid && c && c.start && !c.end && c.events) {
+    var st = totals(c), met = c.override || c.machine.met_default || 0;
+    run = { name: c.machine.name, work: st.work, rest: st.rest, pause: st.pause, sets: st.setsDone,
+            kcal: DATA.kg ? (c.split ? met * st.work + REST_MET * st.rest : met * (st.work + st.rest)) * DATA.kg / 3600 : 0 };
+  }
+  var kcal = tot.kcal + (run ? run.kcal : 0), mins = tot.min + (run ? (run.work + run.rest) / 60 : 0);
+  var h = '<p class="muted">' + esc(title) + '</p>';
+  h += '<div class="kpis">' + kpi('Activities', tot.acts + (run ? 1 : 0)) + kpi('Active min', Math.round(mins)) + kpi('kcal', Math.round(kcal)) +
+       kpi('Volume lb', fmtNum(tot.vol)) + kpi('Lifting min', Math.round(tot.work + (run ? run.work / 60 : 0))) + kpi('Resting min', Math.round(tot.rest + (run ? run.rest / 60 : 0))) + '</div>';
+  var rows = list.map(function (s) {
+    var m = machineById(s.m);
+    return '<div class="item"><span class="grow">' + esc(m.name) + '<small>' + esc([s.load ? s.load + ' lb · ' + (s.sets || '–') + ' × ' + (s.reps || '–') : '', s.min != null ? Math.round(s.min * 10) / 10 + ' min' : ''].filter(Boolean).join(' · ')) + '</small></span><b>' + (s.kcal != null ? Math.round(s.kcal) : '–') + ' kcal</b></div>';
+  });
+  if (run) rows.push('<div class="item"><span class="grow">' + esc(run.name) + ' <span class="acc">· running now</span><small>' + run.sets + ' sets done · ' + clock(run.work + run.rest) + ' active</small></span><b>~' + Math.round(run.kcal) + ' kcal</b></div>');
+  h += '<div class="list">' + (rows.join('') || '<div class="item"><span class="muted">Nothing saved yet in this workout</span></div>') + '</div>';
+  if (list.length > 1) h += '<div class="card">' + barChart('ch-live', list.map(function (s) { return machineById(s.m).name; }), list.map(function (s) { return s.kcal || 0; }), null,
+    list.map(function (s) { return machineById(s.m).name + ': ' + Math.round(s.kcal || 0) + ' kcal, ' + (Math.round((s.min || 0) * 10) / 10) + ' min'; })) + '</div>';
+  R.text = 'RepLog — ' + title + '\nTotals: ' + (tot.acts + (run ? 1 : 0)) + ' activities, ' + Math.round(mins) + ' active min, ' + Math.round(kcal) + ' kcal, volume ' + Math.round(tot.vol) + ' lb, lifting ' + Math.round(tot.work) + ' min, resting ' + Math.round(tot.rest) + ' min\n' +
+    list.map(function (s) { return '- ' + machineById(s.m).name + ': ' + (s.load ? s.load + ' lb, ' + (s.sets || '?') + ' sets x ' + (s.reps || '?') + ' reps, ' : '') + (s.min || 0) + ' min, ' + Math.round(s.kcal || 0) + ' kcal' + (s.rpe ? ', effort ' + s.rpe + '/10' : ''); }).join('\n') +
+    (run ? '\n- ' + run.name + ' (still running): ' + run.sets + ' sets so far' : '');
+  return h;
+}
+function kpi(k, v, d) { return '<div class="kpi"><div class="k">' + k + '</div><div class="v">' + v + '</div>' + (d ? '<div class="d">' + d + '</div>' : '') + '</div>'; }
+
+/* --- Stats --- */
+function renderStatsReport() {
+  var r = periodRange(), cmp = $('rf-compare').checked && r.pa, group = $('rf-group').value, metric = R.metric;
+  var list = filterSets(r.a, r.b), prevList = cmp ? filterSets(r.pa, r.pb) : null;
+  var tot = sumUp(list), pt = cmp ? sumUp(prevList) : null;
+  var d = function (k) { return cmp ? delta(tot[k], pt[k]) : ''; };
+  var h = '<p class="muted">' + esc(PERIOD_NAMES[$('rf-period').value]) + ': ' + shortDate(r.a) + ' – ' + shortDate(r.b) + (cmp ? ' · vs ' + shortDate(r.pa) + ' – ' + shortDate(r.pb) : '') + '</p>';
+  h += '<div class="kpis">' + kpi('Workouts', tot.workouts, d('workouts')) + kpi('Active min', Math.round(tot.min), d('min')) + kpi('kcal', Math.round(tot.kcal), d('kcal')) +
+       kpi('Volume lb', fmtNum(tot.vol), d('vol')) + kpi('Activities', tot.acts, d('acts')) + kpi('kcal / workout', tot.workouts ? Math.round(tot.kcal / tot.workouts) : '–') + '</div>';
+  if (!list.length) { R.text = 'RepLog stats, ' + PERIOD_NAMES[$('rf-period').value] + ': no activities match the filters.'; return h + '<p class="muted">No activities match these filters.</p>'; }
+  var keys = bucketsFor(group, r.a, r.b, list), agg = aggregate(group, keys, list), span = nDays(r.a, r.b);
+  var prevAgg = null;
+  if (cmp) {
+    if (group === 'machine' || group === 'category') { prevAgg = aggregate(group, keys, prevList); }
+    else { var pk = bucketsFor(group, r.pa, r.pb, prevList); var pa = aggregate(group, pk, prevList); prevAgg = keys.map(function (_, i) { return pa[i] || sumUp([]); }); }
+  }
+  if (group === 'machine' || group === 'category') {      // biggest first
+    var idx = keys.map(function (_, i) { return i; }).sort(function (x, y) { return agg[y][metric] - agg[x][metric]; }).slice(0, 12);
+    keys = idx.map(function (i) { return keys[i]; }); prevAgg = prevAgg && idx.map(function (i) { return prevAgg[i]; }); agg = idx.map(function (i) { return agg[i]; });
+  }
+  var labels = keys.map(function (k) { return labelOf(group, k, span); });
+  var cur = agg.map(function (a) { return a[metric]; }), prev = prevAgg && prevAgg.map(function (a) { return a[metric]; });
+  var unit = METRICS[metric].unit;
+  var tips = labels.map(function (l, i) { return l + ': ' + fmtV(cur[i], metric) + (unit ? ' ' + unit : '') + (prev ? ' · previous ' + fmtV(prev[i], metric) : ''); });
+  h += '<div class="card"><div class="row between"><h3 style="margin:0;font-size:16px">' + METRICS[metric].name + ' by ' + $('rf-group').selectedOptions[0].text.toLowerCase() + '</h3></div>' +
+       '<div class="chips">' + Object.keys(METRICS).map(function (k) { return '<button class="chip"' + (k === metric ? ' style="border-color:var(--acc);color:var(--text)"' : '') + ' data-metric="' + k + '">' + METRICS[k].name + '</button>'; }).join('') + '</div>' +
+       barChart('ch-stats', labels, cur, prev, tips) + '</div>';
+  h += '<div class="card" style="padding:10px 12px"><table class="tbl"><tr><th>' + esc($('rf-group').selectedOptions[0].text) + '</th><th>Wkts</th><th>Min</th><th>kcal</th><th>Vol lb</th></tr>' +
+       agg.map(function (a, i) { return a.acts ? '<tr><td>' + esc(labels[i]) + '</td><td>' + a.workouts + '</td><td>' + Math.round(a.min) + '</td><td>' + Math.round(a.kcal) + '</td><td>' + fmtNum(a.vol) + '</td></tr>' : ''; }).join('') + '</table></div>';
+  R.text = 'RepLog stats — ' + PERIOD_NAMES[$('rf-period').value] + ' (' + r.a + ' to ' + r.b + ')' + filterText() + '\n' +
+    'Totals: ' + tot.workouts + ' workouts, ' + tot.acts + ' activities, ' + Math.round(tot.min) + ' active min, ' + Math.round(tot.kcal) + ' kcal, volume ' + Math.round(tot.vol) + ' lb' +
+    (cmp ? '\nPrevious period (' + r.pa + ' to ' + r.pb + '): ' + pt.workouts + ' workouts, ' + pt.acts + ' activities, ' + Math.round(pt.min) + ' min, ' + Math.round(pt.kcal) + ' kcal, volume ' + Math.round(pt.vol) + ' lb' : '') +
+    '\nBy ' + $('rf-group').selectedOptions[0].text.toLowerCase() + ':\n' +
+    agg.map(function (a, i) { return a.acts ? '- ' + labels[i] + ': ' + a.workouts + ' workouts, ' + Math.round(a.min) + ' min, ' + Math.round(a.kcal) + ' kcal, ' + Math.round(a.vol) + ' lb' : ''; }).filter(Boolean).join('\n');
+  return h;
+}
+function filterText() {
+  var f = [];
+  if ($('rf-cat').value) f.push('category ' + $('rf-cat').value);
+  if ($('rf-muscle').value) f.push('muscle ' + $('rf-muscle').value);
+  if ($('rf-machine').value) f.push('machine ' + machineById($('rf-machine').value).name);
+  return f.length ? ' · filters: ' + f.join(', ') : '';
+}
+
+/* --- Machines --- */
+function renderMachineReport() {
+  var r = periodRange(), list = filterSets(r.a, r.b, true), all = (DATA.hist && DATA.hist.sets) || [];
+  var by = {};
+  list.forEach(function (s) { (by[s.m] = by[s.m] || []).push(s); });
+  var ids = Object.keys(by).sort(function (a, b) { return by[b].length - by[a].length; });
+  var bestEver = function (id) { return all.filter(function (s) { return s.m === id; }).reduce(function (mx, s) { return Math.max(mx, s.load || 0); }, 0); };
+  var h = '<p class="muted">' + esc(PERIOD_NAMES[$('rf-period').value]) + ': ' + shortDate(r.a) + ' – ' + shortDate(r.b) + '</p>';
+  if (R.sel) {
+    var m = machineById(R.sel), ms = all.filter(function (s) { return s.m === R.sel && s.d >= r.a && s.d <= r.b; }).sort(function (a, b) { return (a.t || a.d) < (b.t || b.d) ? -1 : 1; });
+    var hasLoad = ms.some(function (s) { return s.load; }), days = {};
+    ms.forEach(function (s) { var v = hasLoad ? (s.load || 0) : (s.min || 0); if (!days[s.d] || v > days[s.d].y) days[s.d] = { x: s.d, y: v, s: s }; });
+    var pts = Object.keys(days).sort().map(function (k) { var p = days[k]; return { x: p.x, y: p.y, tip: shortDate(p.x) + ': ' + (hasLoad ? p.y + ' lb' + (p.s.sets ? ', ' + p.s.sets + ' × ' + (p.s.reps || '?') : '') : (Math.round(p.y * 10) / 10) + ' min') }; });
+    var be = bestEver(R.sel), tot = sumUp(ms);
+    h += '<div class="row between"><h2>' + esc(m.name) + '</h2><button class="chip" id="b-rm-all" style="margin:0">All machines</button></div>';
+    h += '<div class="kpis">' + kpi('Sessions', ms.length) + kpi(hasLoad ? 'Best (period)' : 'Minutes', hasLoad ? Math.max.apply(null, ms.map(function (s) { return s.load || 0; }).concat([0])) + ' lb' : Math.round(tot.min)) +
+         kpi(hasLoad ? 'Best ever' : 'kcal', hasLoad ? be + ' lb' : Math.round(tot.kcal)) + kpi('Volume lb', fmtNum(tot.vol)) + kpi('kcal', Math.round(tot.kcal)) + kpi('Avg effort', avgRpe(ms)) + '</div>';
+    h += '<div class="card"><h3 style="margin:0 0 4px;font-size:16px">' + (hasLoad ? 'Heaviest weight per day (lb)' : 'Minutes per day') + '</h3>' + lineChart('ch-m', pts) + '</div>';
+    h += '<div class="list">' + ms.slice().reverse().slice(0, 20).map(function (s) {
+      return '<div class="item"><span class="grow">' + shortDate(s.d) + '<small>' + esc([s.load ? s.load + ' lb · ' + (s.sets || '–') + ' × ' + (s.reps || '–') : '', s.min != null ? Math.round(s.min * 10) / 10 + ' min' : '', s.rpe ? 'effort ' + s.rpe + '/10' : ''].filter(Boolean).join(' · ')) + '</small></span><b>' + (s.load && s.load === be ? '★ best' : (s.kcal != null ? Math.round(s.kcal) + ' kcal' : '')) + '</b></div>';
+    }).join('') + '</div>';
+    R.text = 'RepLog machine progress — ' + m.name + ', ' + r.a + ' to ' + r.b + ' (best ever ' + be + ' lb)\n' + ms.map(function (s) { return '- ' + s.d + ': ' + (s.load ? s.load + ' lb, ' + (s.sets || '?') + ' x ' + (s.reps || '?') + ', ' : '') + (s.min || 0) + ' min, ' + Math.round(s.kcal || 0) + ' kcal' + (s.rpe ? ', effort ' + s.rpe + '/10' : ''); }).join('\n');
+    return h;
+  }
+  if (!ids.length) { R.text = 'RepLog machines: no activities in this period.'; return h + '<p class="muted">No activities match these filters.</p>'; }
+  h += '<div class="list">' + ids.map(function (id) {
+    var ss = by[id], m = machineById(id), tot = sumUp(ss), best = ss.reduce(function (mx, s) { return Math.max(mx, s.load || 0); }, 0), be = bestEver(id);
+    var lastS = ss.slice().sort(function (a, b) { return (a.t || a.d) < (b.t || b.d) ? 1 : -1; })[0];
+    return '<button class="item" data-rm="' + esc(id) + '"><span class="thumb">' + machineArt(m, 36) + '</span><span class="grow">' + esc(m.name) + '<small>' + ss.length + ' session' + (ss.length === 1 ? '' : 's') +
+      (best ? ' · best ' + best + ' lb' + (best === be ? ' ★' : '') + ' · last ' + (lastS.load || '–') + ' lb' : ' · ' + Math.round(tot.min) + ' min') + '</small></span><b>' + Math.round(tot.kcal) + ' kcal</b></button>';
+  }).join('') + '</div><p class="muted">★ = your best ever on that machine. Tap a machine for its progress chart.</p>';
+  R.text = 'RepLog machines — ' + r.a + ' to ' + r.b + filterText() + '\n' + ids.map(function (id) {
+    var ss = by[id], tot = sumUp(ss), best = ss.reduce(function (mx, s) { return Math.max(mx, s.load || 0); }, 0);
+    return '- ' + machineById(id).name + ': ' + ss.length + ' sessions' + (best ? ', best ' + best + ' lb (best ever ' + bestEver(id) + ' lb)' : '') + ', ' + Math.round(tot.min) + ' min, ' + Math.round(tot.kcal) + ' kcal, volume ' + Math.round(tot.vol) + ' lb';
+  }).join('\n');
+  return h;
+}
+function avgRpe(list) { var r = list.filter(function (s) { return s.rpe; }); return r.length ? Math.round(r.reduce(function (t, s) { return t + s.rpe; }, 0) / r.length * 10) / 10 : '–'; }
+
+/* --- Goals & weight --- */
+function renderGoalsReport() {
+  var r = periodRange(), w = ((DATA.hist && DATA.hist.weights) || []), inP = w.filter(function (x) { return x.d >= r.a && x.d <= r.b; });
+  var useAll = inP.length < 2 && w.length >= 2, pts = (useAll ? w : inP).map(function (x) { return { x: x.d, y: x.lb, tip: shortDate(x.d) + ': ' + x.lb + ' lb' }; });
+  var tg = (DATA.goals || []).find(function (g) { return g.goal_type === 'Target body weight' && g.status === 'Active'; });
+  var h = '<div class="card"><h3 style="margin:0 0 4px;font-size:16px">Body weight (lb)' + (useAll ? ' · all time (fewer than 2 weigh-ins in this period)' : '') + '</h3>' + lineChart('ch-w', pts, 'lb', tg ? Number(tg.target_value) : null) + '</div>';
+  if (pts.length >= 2) {
+    var ch = Math.round((pts[pts.length - 1].y - pts[0].y) * 10) / 10;
+    h += '<div class="kpis">' + kpi('First', pts[0].y + ' lb', shortDate(pts[0].x)) + kpi('Latest', pts[pts.length - 1].y + ' lb', shortDate(pts[pts.length - 1].x)) + kpi('Change', (ch > 0 ? '+' : '') + ch + ' lb') + '</div>';
+  }
+  var gs = (DATA.goals || []).filter(function (g) { return g.status !== 'Dropped'; });
+  h += '<div class="card"><h3 style="margin:0;font-size:16px">Goals</h3>' + (gs.length ? gs.map(function (g) { return goalHtml(g, false); }).join('') : '<p class="muted" style="margin-top:8px">No goals yet. Add them in Settings → Goals.</p>') + '</div>';
+  R.text = 'RepLog goals and body weight\nWeigh-ins: ' + pts.map(function (p) { return p.x + ' ' + p.y + ' lb'; }).join('; ') +
+    '\nGoals:\n' + gs.map(function (g) { return '- ' + goalTitle(g) + ' — ' + goalProgress(g).text + (g.by_date ? ' (by ' + String(g.by_date).slice(0, 10) + ')' : ''); }).join('\n');
+  return h;
+}
+
+/* --- Ask Claude: copy a plain-text summary of what's on screen, then open Claude --- */
+$('b-ask-claude').onclick = function () {
+  var txt = (R.text || '') + '\n\n(Calories are MET-based estimates. Volume = weight × reps × sets.)\nWhat stands out in this data? Give me 3 short insights and one suggestion for my next workouts.';
+  var open = function () { window.open('https://claude.ai/new', '_blank'); };
+  var fallback = function () {
+    var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).catch(fallback); else fallback();
+  toast('Summary copied. In Claude, tap the message box → Paste, then send or add your own question.');
+  open();   // must happen straight from the tap, or the phone blocks the new window
+};
 
 /* ---------- navigation ---------- */
 document.addEventListener('click', function (e) {
