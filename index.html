@@ -308,9 +308,44 @@ var INSTRUCTIONS = {
   <div class="list">
     <button class="item" id="b-to-profile"><span class="grow">Profile<small>Name, phone, height, birth year, activity</small></span><span class="muted">›</span></button>
     <button class="item" id="b-to-goals"><span class="grow">Goals<small>Add, edit or finish your goals</small></span><span class="muted">›</span></button>
+    <button class="item" id="b-to-watch"><span class="grow">Apple Watch<small>Set, Pause and End from your watch</small></span><span class="muted">›</span></button>
   </div>
   <button class="danger" id="b-logout">Log out</button>
-  <p class="muted" style="text-align:center">RepLog version 2026-11-07h</p>
+  <p class="muted" style="text-align:center">RepLog version 2026-11-07i</p>
+</section>
+<section id="s-watch">
+  <div class="row"><button class="icon" data-go="settings" aria-label="Back">‹</button><h1>Apple Watch</h1></div>
+  <p class="muted">Press <b>Set</b>, <b>Pause / Resume</b> and <b>End</b> from your watch while an activity is running. The phone buttons keep working too. Choose the machine and save the activity on the phone as before.</p>
+  <div class="card">
+    <h3 style="margin-top:0">1. Your watch key</h3>
+    <p class="muted" id="wk-note">Make a key once. It lets the watch shortcut press the buttons for you only. Making a new key stops the old one.</p>
+    <div id="wk-box" style="display:none">
+      <label>Watch key<input id="wk-key" readonly></label>
+      <button class="secondary" id="b-copy-key">Copy key</button>
+    </div>
+    <button class="primary" id="b-wkey">Make watch key</button>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">2. Web address</h3>
+    <label>RepLog web address<input id="wk-url" readonly></label>
+    <button class="secondary" id="b-copy-url">Copy web address</button>
+  </div>
+  <div class="card howto">
+    <h3 style="margin-top:0">3. Build the shortcut (once, on the iPhone)</h3>
+    <ol>
+      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, name it <b>RepLog</b>.</li>
+      <li>Add <b>List</b> with four items: <b>Set</b>, <b>Pause</b>, <b>End</b>, <b>Status</b>.</li>
+      <li>Add <b>Choose from List</b> (it uses the List).</li>
+      <li>Add <b>Get Contents of URL</b>. Paste the web address. Tap ▸ / Show More: Method <b>POST</b>, Request Body <b>JSON</b>, then add three Text fields:
+        <br><b>action</b> = watch
+        <br><b>key</b> = paste your watch key
+        <br><b>cmd</b> = tap and pick <b>Chosen Item</b></li>
+      <li>Add <b>Show Result</b> (it shows the answer, such as “✓ Set 2 done · resting”).</li>
+      <li>Tap the <b>ⓘ</b> / settings for the shortcut and turn on <b>Show on Apple Watch</b>.</li>
+      <li>On the watch, open <b>Shortcuts</b> → <b>RepLog</b>. To get there in one tap, add the Shortcuts complication to your watch face and pick RepLog.</li>
+    </ol>
+    <p class="muted">Each press takes a second or two and needs the phone nearby or Wi-Fi. When you pick up the phone, the timer catches up with what you pressed on the watch.</p>
+  </div>
 </section>
 
 <!-- PROFILE -->
@@ -389,6 +424,10 @@ var INSTRUCTIONS = {
   </div>
   <div style="flex:1"></div>
   <button class="primary" id="b-go" style="height:60px;font-size:18px">▶ Start activity</button>
+  <div class="grid2">
+    <button class="secondary" id="b-plan-other">Different machine</button>
+    <button class="ghost" id="b-plan-finish">Finish workout</button>
+  </div>
   <div class="art" id="pl-art"></div>
   <div class="card howto" id="pl-howto"></div>
 </section>
@@ -856,11 +895,36 @@ $('b-go').onclick = function () {
   if (!isStrength(m)) { c.load = null; c.reps = null; c.sets = null; }
   c.start = new Date().toISOString();
   // work/rest split for strength & bodyweight; cardio and stretching only get pause
-  c.split = isStrength(m); c.phase = 'work'; c.segStart = Date.now();
-  c.work = 0; c.rest = 0; c.pause = 0; c.setsDone = 0; c.paused = false; c.pauseStart = null;
+  c.split = isStrength(m);
+  c.aid = rid('a'); c.events = [];
+  c.base = { t: new Date(c.start).getTime(), phase: 'work', paused: false, work: 0, rest: 0, pause: 0, setsDone: 0 };
   save();
   renderActive(); show('active');
 };
+
+$('b-plan-other').onclick = function () { S.current = null; save(); $('f-search').value = ''; renderPick(); show('pick'); };
+$('b-plan-finish').onclick = function () { S.current = null; save(); finishWorkout(); };
+
+/* ---------- Apple Watch settings ---------- */
+function copyText(inp, what) {
+  var v = $(inp).value;
+  var done = function () { toast(what + ' copied'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, function () { $(inp).select(); document.execCommand('copy'); done(); });
+  else { $(inp).select(); document.execCommand('copy'); done(); }
+}
+$('b-to-watch').onclick = function () { $('wk-url').value = SCRIPT_URL; show('watch'); };
+$('b-wkey').onclick = function () {
+  var go = function () {
+    busy(true, 'Making key…');
+    call('watchKey', {}).then(function (o) {
+      busy(false); $('wk-key').value = o.key; $('wk-box').style.display = 'block'; $('b-wkey').textContent = 'Make a new key';
+      $('wk-note').textContent = 'Copy this key into the shortcut now. It is shown only once; if you lose it, make a new one and update the shortcut.';
+    }).catch(function (e) { busy(false); toast(e.message, true); });
+  };
+  if ($('wk-key').value) ask('Make a new key?', 'The key already in your watch shortcut will stop working until you paste the new one.', 'Make new key', go); else go();
+};
+$('b-copy-key').onclick = function () { copyText('wk-key', 'Key'); };
+$('b-copy-url').onclick = function () { copyText('wk-url', 'Web address'); };
 
 /* ---------- active ---------- */
 function planText(c) {
@@ -964,19 +1028,69 @@ var REST_MET = 1.5; // Compendium 07041, standing (fidgeting); same value as the
 
 function clock(sec) { sec = Math.max(0, Math.floor(sec)); return (sec >= 3600 ? Math.floor(sec / 3600) + ':' + String(Math.floor(sec / 60) % 60).padStart(2, '0') : Math.floor(sec / 60)) + ':' + String(sec % 60).padStart(2, '0'); }
 // seconds so far in each bucket, including the segment that is running now
-function totals(c) {
-  var t = { work: c.work || 0, rest: c.rest || 0, pause: c.pause || 0 };
-  var now = Date.now();
-  if (c.paused) t.pause += (now - c.pauseStart) / 1000;
-  else t[c.phase || 'work'] += (now - (c.segStart || new Date(c.start).getTime())) / 1000;
-  return t;
+function rid(p) { return (p || 'p') + Math.random().toString(36).slice(2, 10); }
+// Timer state = a starting point (base) + the list of taps from the phone and the watch, replayed in time order.
+// Same rules as the script's liveReplay.
+function replay(c, now) {
+  var b = c.base || {};
+  var st = { phase: b.phase || 'work', paused: !!b.paused, work: b.work || 0, rest: b.rest || 0, pause: b.pause || 0, setsDone: b.setsDone || 0, seg: b.t, ended: null };
+  var ev = (c.events || []).slice().sort(function (x, y) { return x.t - y.t || (x.id < y.id ? -1 : 1); });
+  function close(t) { var k = st.paused ? 'pause' : st.phase; st[k] += Math.max(0, t - st.seg) / 1000; st.seg = Math.max(st.seg, t); }
+  for (var i = 0; i < ev.length && !st.ended; i++) {
+    var e = ev[i];
+    if (e.c === 'set') { if (st.paused || !c.split) continue; close(e.t); if (st.phase === 'work') { st.setsDone++; st.phase = 'rest'; } else st.phase = 'work'; }
+    else if (e.c === 'pause') { close(e.t); st.paused = !st.paused; }
+    else if (e.c === 'end') { var wp = st.paused; close(e.t); if (!wp && c.split && st.phase === 'work' && (st.setsDone > 0 || st.rest > 0)) st.setsDone++; st.ended = e.t; }
+  }
+  if (!st.ended && now) close(now);
+  return st;
 }
-function closeSeg(c) { var now = Date.now(); c[c.phase] = (c[c.phase] || 0) + (now - c.segStart) / 1000; c.segStart = now; }
+function totals(c) { return replay(c, Date.now()); }
 function usedSplit(c) { return c.split && (c.setsDone > 0 || c.rest > 0); }
+// Older saved activities (before the watch version) kept running totals: turn them into a base point.
+function upgradeCurrent(c) {
+  if (c.events) return;
+  var t = c.paused ? c.pauseStart : (c.segStart || new Date(c.start).getTime());
+  c.base = { t: t, phase: c.phase || 'work', paused: !!c.paused, work: c.work || 0, rest: c.rest || 0, pause: c.pause || 0, setsDone: c.setsDone || 0 };
+  c.events = []; c.aid = c.aid || rid('a');
+}
+function tap(kind) {
+  var c = S.current; if (!c || c.end) return;
+  c.events.push({ id: rid('p'), t: Date.now(), c: kind, src: 'phone' });
+  save(); liveSync();
+}
+
+/* ---------- sync with the watch ---------- */
+var syncBusy = false, syncAgain = false, syncTimer = null;
+function liveSync() {
+  var c = S.current;
+  if (!c || !c.aid || !c.start) return;
+  if (syncBusy) { syncAgain = true; return; }   // a tap during a sync is sent right after it
+  syncBusy = true; syncAgain = false;
+  var aid = c.aid;
+  call('liveSync', { live: { aid: aid, name: c.machine.name, split: !!c.split, base: c.base, events: c.events } }).then(function (o) {
+    syncBusy = false;
+    if (syncAgain) setTimeout(liveSync, 0);
+    var cur = S.current; if (!cur || cur.aid !== aid || !o.events) return;
+    var have = {}, fromWatch = [];
+    cur.events.forEach(function (e) { have[e.id] = true; });
+    o.events.forEach(function (e) { if (!have[e.id]) { cur.events.push(e); if (e.src === 'watch') fromWatch.push(e); } });
+    if (!fromWatch.length) return;
+    save();
+    var label = { set: 'Set', pause: 'Pause / Resume', end: 'End' };
+    toast('⌚ From watch: ' + fromWatch.map(function (e) { return label[e.c] || e.c; }).join(', '));
+    var st = replay(cur, 0);
+    if (st.ended && !cur.end && screen === 'active') finishActive();
+    else if (screen === 'active') tick();
+  }).catch(function () { syncBusy = false; if (syncAgain) setTimeout(liveSync, 3000); });
+}
+function liveClear(aid) { if (aid) call('liveSync', { clear: true, aid: aid }).catch(function () {}); }
+function startSyncLoop() { clearInterval(syncTimer); syncTimer = setInterval(function () { if (screen === 'active' && document.visibilityState === 'visible') liveSync(); }, 8000); }
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && screen === 'active') liveSync(); });
 
 function renderActive() {
   var c = S.current;
-  if (!c.segStart) { c.phase = 'work'; c.segStart = new Date(c.start).getTime(); c.work = c.work || 0; c.rest = c.rest || 0; c.pause = c.pause || 0; c.setsDone = c.setsDone || 0; save(); }
+  upgradeCurrent(c); save();
   $('a-name').textContent = c.machine.name; $('a-plan').textContent = planText(c);
   $('a-art').innerHTML = machineArt(c.machine, 140);
   $('a-howto').innerHTML = howtoHtml(c.machine).replace('<h3>How to</h3>', '');
@@ -985,6 +1099,7 @@ function renderActive() {
   $('b-set').style.display = c.split ? 'block' : 'none';
   $('a-hint').textContent = c.split ? 'Tap the green button when each set ends and again when the next one starts. Use Pause for interruptions.' : 'Use Pause for interruptions such as a phone call.';
   clearInterval(timerId); tick(); timerId = setInterval(tick, 1000);
+  startSyncLoop(); liveSync();
 }
 function tick() {
   var c = S.current; if (!c || !c.start) return;
@@ -994,34 +1109,31 @@ function tick() {
   var met = c.override || c.machine.met_default || 0;
   var kcal = DATA.kg ? (c.split ? (met * t.work + REST_MET * t.rest) : met * (t.work + t.rest)) * DATA.kg / 3600 : 0;
   $('a-kcal').textContent = Math.round(kcal) + ' kcal';
-  var setNo = (c.setsDone || 0) + 1;
-  if (c.paused) { $('a-status').textContent = 'Paused'; $('a-dot').style.background = 'var(--muted)'; $('a-ring').style.borderColor = 'var(--line)'; }
-  else if (c.phase === 'rest') { $('a-status').textContent = 'Resting after set ' + c.setsDone; $('a-dot').style.background = 'var(--soft)'; $('a-ring').style.borderColor = 'var(--soft)'; }
+  var setNo = t.setsDone + 1;
+  if (t.ended && !c.end) { finishActive(); return; }
+  if (t.paused) { $('a-status').textContent = 'Paused'; $('a-dot').style.background = 'var(--muted)'; $('a-ring').style.borderColor = 'var(--line)'; }
+  else if (t.phase === 'rest') { $('a-status').textContent = 'Resting after set ' + t.setsDone; $('a-dot').style.background = 'var(--soft)'; $('a-ring').style.borderColor = 'var(--soft)'; }
   else { $('a-status').textContent = c.split ? 'Set ' + setNo + ' · lifting' : 'Recording'; $('a-dot').style.background = 'var(--acc)'; $('a-ring').style.borderColor = 'var(--acc)'; }
-  $('b-set').textContent = c.phase === 'rest' ? '▶ Start set ' + setNo : 'Set ' + setNo + ' done · rest';
-  $('b-set').disabled = !!c.paused;
-  $('b-pause').textContent = c.paused ? '▶ Resume' : '❚❚ Pause';
+  $('b-set').textContent = t.phase === 'rest' ? '▶ Start set ' + setNo : 'Set ' + setNo + ' done · rest';
+  $('b-set').disabled = !!t.paused;
+  $('b-pause').textContent = t.paused ? '▶ Resume' : '❚❚ Pause';
 }
 $('b-set').onclick = function () {
-  var c = S.current; if (!c || c.paused) return;
-  closeSeg(c);
-  if (c.phase === 'work') { c.setsDone = (c.setsDone || 0) + 1; c.phase = 'rest'; } else c.phase = 'work';
-  save(); tick();
+  var c = S.current; if (!c || totals(c).paused) return;
+  tap('set'); tick();
 };
-$('b-pause').onclick = function () {
+$('b-pause').onclick = function () { if (!S.current) return; tap('pause'); tick(); };
+$('b-end').onclick = function () { if (!S.current) return; tap('end'); finishActive(); };
+// Activity ended (on the phone or the watch): freeze the times and go to "What did you do?"
+function finishActive() {
   var c = S.current; if (!c) return;
-  if (!c.paused) { closeSeg(c); c.paused = true; c.pauseStart = Date.now(); }
-  else { c.pause = (c.pause || 0) + (Date.now() - c.pauseStart) / 1000; c.paused = false; c.pauseStart = null; c.segStart = Date.now(); }
-  save(); tick();
-};
-$('b-end').onclick = function () {
-  var c = S.current;
-  clearInterval(timerId);
-  if (c.paused) { c.pause = (c.pause || 0) + (Date.now() - c.pauseStart) / 1000; c.paused = false; }
-  else { closeSeg(c); if (c.split && c.phase === 'work' && (c.setsDone > 0 || c.rest > 0)) c.setsDone++; }
-  c.end = new Date().toISOString(); save();
+  clearInterval(timerId); clearInterval(syncTimer);
+  var st = replay(c, Date.now());
+  if (!st.ended) { c.events.push({ id: rid('p'), t: Date.now(), c: 'end', src: 'phone' }); st = replay(c, Date.now()); }
+  c.work = st.work; c.rest = st.rest; c.pause = st.pause; c.setsDone = st.setsDone;
+  c.end = new Date(st.ended).toISOString(); save();
   renderLog(); show('log');
-};
+}
 
 /* ---------- log ---------- */
 function renderLog() {
@@ -1063,7 +1175,7 @@ function saveSet(next) {
     busy(false);
     S.workout.count = (S.workout.count || 0) + 1;
     S.last = { machine: m, load: c.load };
-    S.current = null; save();
+    liveClear(c.aid); S.current = null; save();
     toast(m.name + ': ' + (o.kcal !== '' ? o.kcal + ' kcal' : 'saved') + (o.warning ? ' — ' + o.warning : ''));
     if (next === 'same') { openPlan(m, true); $('f-load').value = ''; $('f-load').focus(); }
     else if (next === 'next') { $('f-search').value = ''; renderPick(); show('pick'); }
@@ -1112,7 +1224,7 @@ function ask(title, text, yesLabel, onYes) {
 }
 function discardActivity() {
   ask('Discard this activity?', 'The timer and anything you entered for this activity are thrown away. Activities you already saved stay.', 'Discard activity', function () {
-    clearInterval(timerId); S.current = null; save();
+    clearInterval(timerId); clearInterval(syncTimer); if (S.current) liveClear(S.current.aid); S.current = null; save();
     $('f-search').value = ''; renderPick(); show('pick'); toast('Activity discarded');
   });
 }
@@ -1120,7 +1232,8 @@ function cancelWorkout() {
   if (!S.workout) { show('home'); return; }
   var n = S.workout.count || 0;
   ask('Cancel this workout?', n ? 'This deletes the workout and the ' + n + ' activit' + (n === 1 ? 'y' : 'ies') + ' already saved from your Sheet. This cannot be undone.' : 'Nothing has been saved yet; the workout is removed.', 'Cancel workout', function () {
-    clearInterval(timerId);
+    clearInterval(timerId); clearInterval(syncTimer);
+    if (S.current) liveClear(S.current.aid);
     busy(true, 'Cancelling…');
     call('cancelWorkout', { workout_id: S.workout.id, user_id: S.user_id }).then(function () {
       busy(false); S.workout = null; S.current = null; save();
